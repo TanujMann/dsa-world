@@ -1,0 +1,2112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>DSA WORLD — Advanced C++ Project</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323:wght@400&family=Courier+Prime:wght@400;700&display=swap');
+
+:root {
+  --sky:   #5c94fc;
+  --sky2:  #3a6fd8;
+  --mario: #e52521;
+  --coin:  #fbd000;
+  --green: #43b047;
+  --dark:  #1a1a2e;
+  --brick: #c84b11;
+  --brick2:#a03d0d;
+  --pipe:  #2ecc40;
+  --pipe2: #27ae60;
+  --cloud: #ffffff;
+  --block: #e8a010;
+  --block2:#c87800;
+  --ground:#8b6914;
+  --ground2:#5c4510;
+  --text:  #1a1a2e;
+  --white: #ffffff;
+  --shadow:#000000;
+  --tan:   #f5deb3;
+  --cream: #fffde7;
+  --star:  #ffd700;
+  --purple:#9b59b6;
+  --pink:  #ff69b4;
+  --ice:   #87ceeb;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--sky);
+  font-family: 'Press Start 2P', monospace;
+  min-height: 100vh;
+  overflow-x: hidden;
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Crect x='2' y='2' width='16' height='16' fill='%23fbd000' stroke='%23000' stroke-width='2'/%3E%3C/svg%3E") 10 10, auto;
+}
+
+/* ═══ PIXEL PATTERN BG ═══ */
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background-image:
+    repeating-linear-gradient(0deg, transparent, transparent 31px, rgba(0,0,0,.06) 31px, rgba(0,0,0,.06) 32px),
+    repeating-linear-gradient(90deg, transparent, transparent 31px, rgba(0,0,0,.06) 31px, rgba(0,0,0,.06) 32px);
+  pointer-events:none; z-index:0;
+}
+
+/* ═══ CLOUDS ═══ */
+.cloud-layer {
+  position:fixed; top:0; left:0; width:200%; height:120px;
+  pointer-events:none; z-index:0;
+  animation: cloudScroll 40s linear infinite;
+}
+@keyframes cloudScroll { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+.cloud {
+  position:absolute;
+  background:var(--white);
+  border-radius:0;
+  image-rendering:pixelated;
+}
+
+/* ═══ PIXEL BOX UTILITY ═══ */
+.pbox {
+  border: 4px solid var(--shadow);
+  box-shadow: 4px 4px 0 var(--shadow);
+  image-rendering: pixelated;
+}
+.pbox:active { box-shadow: 2px 2px 0 var(--shadow); transform: translate(2px,2px); }
+
+/* ═══ CONTAINER ═══ */
+.container {
+  position: relative; z-index: 1;
+  max-width: 1200px; margin: 0 auto;
+  padding: 20px 16px 60px;
+}
+
+/* ═══ HERO ═══ */
+.hero {
+  text-align: center;
+  padding: 30px 0 20px;
+}
+.hero-title {
+  font-size: clamp(1.2rem, 4vw, 2.2rem);
+  color: var(--white);
+  text-shadow: 4px 4px 0 var(--shadow), -2px -2px 0 var(--shadow);
+  letter-spacing: 2px;
+  line-height: 1.4;
+}
+.hero-title span { color: var(--coin); }
+.hero-sub {
+  font-family: 'VT323', monospace;
+  font-size: 1.4rem;
+  color: var(--cream);
+  margin-top: 10px;
+  text-shadow: 2px 2px 0 var(--shadow);
+}
+.coin-counter {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: var(--dark); color: var(--coin);
+  padding: 8px 20px; margin-top: 14px;
+  border: 3px solid var(--coin);
+  box-shadow: 4px 4px 0 var(--shadow);
+  font-size: .65rem;
+}
+.coin-spin {
+  display:inline-block;
+  animation: coinSpin 1s steps(4) infinite;
+}
+@keyframes coinSpin {
+  0%   { transform: scaleX(1); }
+  25%  { transform: scaleX(.5); }
+  50%  { transform: scaleX(0); }
+  75%  { transform: scaleX(.5); }
+  100% { transform: scaleX(1); }
+}
+
+/* ═══ WORLD MAP TABS ═══ */
+.world-tabs {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  margin: 20px 0 16px;
+  justify-content: center;
+}
+.world-tab {
+  background: var(--block);
+  color: var(--white);
+  border: 3px solid var(--shadow);
+  box-shadow: 3px 3px 0 var(--shadow);
+  padding: 10px 14px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: .52rem;
+  cursor: pointer;
+  transition: none;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  position: relative;
+  user-select: none;
+}
+.world-tab::before {
+  content: '';
+  position: absolute; top: 2px; left: 2px; right: 2px;
+  height: 3px; background: rgba(255,255,255,.4);
+}
+.world-tab:hover {
+  background: var(--coin);
+  color: var(--dark);
+  transform: translate(-2px,-2px);
+  box-shadow: 5px 5px 0 var(--shadow);
+}
+.world-tab.active {
+  background: var(--mario);
+  color: var(--white);
+  transform: translate(2px,2px);
+  box-shadow: 1px 1px 0 var(--shadow);
+}
+.world-tab .w-num {
+  display:block; font-size:.45rem;
+  color: rgba(255,255,255,.7); margin-bottom:3px;
+}
+
+/* ═══ PANEL ═══ */
+.panel { display:none; }
+.panel.active { display:block; animation: levelIn .2s steps(4); }
+@keyframes levelIn {
+  from { opacity:0; transform:translateY(-8px); }
+  to   { opacity:1; transform:none; }
+}
+
+/* ═══ CARD / BRICK BLOCK ═══ */
+.card {
+  background: var(--cream);
+  border: 4px solid var(--shadow);
+  box-shadow: 6px 6px 0 var(--shadow);
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+.card-header {
+  background: var(--brick);
+  color: var(--white);
+  padding: 10px 16px;
+  font-size: .65rem;
+  letter-spacing: 1px;
+  border-bottom: 4px solid var(--shadow);
+  display: flex; align-items: center; gap: 10px;
+  text-shadow: 2px 2px 0 rgba(0,0,0,.5);
+}
+.card-header .badge {
+  background: var(--coin);
+  color: var(--dark);
+  padding: 2px 8px;
+  font-size: .45rem;
+  border: 2px solid var(--shadow);
+}
+.card-body { padding: 16px; }
+
+/* ═══ CONTROLS ═══ */
+.controls {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  align-items: center; margin-bottom: 14px;
+}
+.pixel-input {
+  background: var(--white);
+  border: 3px solid var(--shadow);
+  box-shadow: 3px 3px 0 var(--shadow);
+  color: var(--dark);
+  padding: 8px 10px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: .6rem;
+  width: 120px;
+  outline: none;
+}
+.pixel-input:focus { border-color: var(--mario); }
+.pixel-input.wide { width: 220px; }
+
+.btn {
+  background: var(--green);
+  color: var(--white);
+  border: 3px solid var(--shadow);
+  box-shadow: 3px 3px 0 var(--shadow);
+  padding: 8px 14px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: .52rem;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  position: relative;
+  user-select: none;
+}
+.btn::before {
+  content:''; position:absolute; top:2px; left:2px; right:2px;
+  height:2px; background:rgba(255,255,255,.4);
+}
+.btn:hover { background: var(--pipe); transform:translate(-1px,-1px); box-shadow:4px 4px 0 var(--shadow); }
+.btn:active { transform:translate(2px,2px); box-shadow:1px 1px 0 var(--shadow); }
+.btn.red    { background: var(--mario); }
+.btn.red:hover { background: #c41e1b; }
+.btn.blue   { background: var(--sky2); }
+.btn.blue:hover { background: #2a5fc0; }
+.btn.gold   { background: var(--coin); color:var(--dark); }
+.btn.gold:hover { background: #e0b800; }
+.btn.purple { background: var(--purple); }
+.btn.sm     { padding: 6px 10px; font-size:.45rem; }
+
+/* ═══ VIZ AREA ═══ */
+.viz-area {
+  background: var(--white);
+  border: 3px solid var(--shadow);
+  box-shadow: inset 2px 2px 0 rgba(0,0,0,.1);
+  min-height: 80px;
+  padding: 12px;
+  display: flex; flex-wrap: wrap; gap: 8px;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+.viz-area.tall { min-height: 200px; align-items: flex-start; flex-direction:column; }
+.viz-area.center { justify-content:center; }
+
+/* ═══ PIXEL NODE ═══ */
+.px-node {
+  width: 46px; height: 46px;
+  background: var(--block);
+  border: 3px solid var(--shadow);
+  box-shadow: 3px 3px 0 var(--shadow);
+  display: flex; align-items:center; justify-content:center;
+  font-family: 'Press Start 2P', monospace;
+  font-size: .6rem; color: var(--white);
+  text-shadow: 1px 1px 0 var(--shadow);
+  position: relative;
+  animation: blockPop .15s steps(3);
+  flex-shrink: 0;
+}
+@keyframes blockPop {
+  from { transform:scale(0) translateY(-10px); }
+  to   { transform:scale(1) translateY(0); }
+}
+.px-node::before {
+  content:''; position:absolute; top:2px; left:2px; right:2px;
+  height:3px; background:rgba(255,255,255,.35);
+}
+.px-node.highlight { background:var(--mario); animation: shake .2s steps(2) infinite; }
+@keyframes shake { 0%,100%{transform:translateX(0)} 50%{transform:translateX(2px)} }
+.px-node.found    { background:var(--green); }
+.px-node.blue-n   { background:var(--sky2); }
+.px-node.coin-n   { background:var(--coin); color:var(--dark); }
+.px-node.purple-n { background:var(--purple); }
+.px-node.dead     { background:var(--ground); opacity:.5; }
+.px-node.stack-top { background:var(--mario); }
+
+.px-arrow { color:var(--dark); font-family:'VT323',monospace; font-size:1.4rem; line-height:1; flex-shrink:0; }
+
+/* ═══ STACK NODES ═══ */
+.stack-node {
+  width: 100%; max-width:200px;
+  height: 38px;
+  background: var(--block);
+  border: 3px solid var(--shadow);
+  box-shadow: 3px 3px 0 var(--shadow);
+  display:flex; align-items:center; justify-content:space-between;
+  padding: 0 10px;
+  font-family:'Press Start 2P',monospace; font-size:.55rem; color:var(--white);
+  text-shadow:1px 1px 0 var(--shadow);
+  animation: blockPop .15s steps(3);
+}
+.stack-node.top { background:var(--mario); }
+.stack-node::before {
+  content:''; position:absolute; top:2px; left:2px; right:2px;
+  height:2px; background:rgba(255,255,255,.3);
+}
+
+/* ═══ SORT BARS ═══ */
+.bars-area {
+  background: var(--white);
+  border: 3px solid var(--shadow);
+  min-height: 160px;
+  display: flex; align-items:flex-end; gap:3px;
+  padding: 8px 8px 0;
+  overflow-x: auto;
+  position: relative;
+}
+.bar {
+  flex:1; min-width:16px; max-width:36px;
+  background: var(--block);
+  border: 2px solid var(--shadow);
+  border-bottom: none;
+  display:flex; align-items:flex-start; justify-content:center;
+  padding-top:3px;
+  font-family:'Press Start 2P',monospace; font-size:.4rem; color:var(--white);
+  text-shadow:1px 1px 0 var(--shadow);
+  position:relative; transition: height .08s steps(4);
+}
+.bar::before { content:''; position:absolute; top:1px; left:1px; right:1px; height:2px; background:rgba(255,255,255,.4); }
+.bar.cmp  { background:var(--mario); }
+.bar.done { background:var(--green); }
+.bar.pivot{ background:var(--coin); }
+
+/* ═══ STAT BOXES ═══ */
+.stat-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+.stat-box {
+  background:var(--dark); color:var(--coin);
+  border:3px solid var(--shadow); box-shadow:3px 3px 0 var(--shadow);
+  padding:8px 12px; font-size:.5rem; text-align:center;
+  min-width:80px;
+}
+.stat-box .stat-val { font-size:.8rem; display:block; margin-top:4px; color:var(--white); }
+.stat-box.green-stat { color:var(--green); }
+.stat-box.red-stat   { color:var(--mario); }
+
+/* ═══ LOG TERMINAL ═══ */
+.log-terminal {
+  background: var(--dark);
+  border: 3px solid var(--shadow);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.05);
+  padding: 10px 12px;
+  font-family: 'VT323', monospace;
+  font-size: 1rem; color: #00ff41;
+  max-height: 120px; overflow-y:auto;
+  line-height:1.5; margin-top:10px;
+}
+.log-terminal .l-ok   { color: #00ff41; }
+.log-terminal .l-info { color: var(--coin); }
+.log-terminal .l-warn { color: var(--mario); }
+.log-terminal .l-step { color: #87ceeb; }
+.log-terminal::-webkit-scrollbar { width:6px; }
+.log-terminal::-webkit-scrollbar-track { background:var(--dark); }
+.log-terminal::-webkit-scrollbar-thumb { background:var(--green); }
+
+/* ═══ COMPLEXITY CHIPS ═══ */
+.chips { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+.chip {
+  background:var(--dark); color:var(--coin);
+  border:2px solid var(--coin); padding:4px 10px;
+  font-size:.45rem; letter-spacing:1px;
+}
+.chip.green { color:var(--green); border-color:var(--green); }
+.chip.red   { color:var(--mario); border-color:var(--mario); }
+.chip.blue  { color:var(--ice);   border-color:var(--ice); }
+
+/* ═══ TREE / GRAPH SVG ═══ */
+.svg-wrap {
+  background:var(--white); border:3px solid var(--shadow);
+  overflow:auto; padding:10px;
+}
+
+/* ═══ DP TABLE ═══ */
+.dp-wrap { overflow-x:auto; }
+table.dp-tbl {
+  border-collapse:collapse;
+  font-family:'Press Start 2P',monospace; font-size:.45rem;
+}
+table.dp-tbl th,
+table.dp-tbl td {
+  border:2px solid var(--shadow); padding:6px 8px;
+  text-align:center; min-width:36px;
+}
+table.dp-tbl th { background:var(--brick); color:var(--white); }
+table.dp-tbl td { background:var(--white); color:var(--dark); }
+table.dp-tbl td.fill { background:var(--block); color:var(--white); }
+table.dp-tbl td.res  { background:var(--green); color:var(--white); }
+table.dp-tbl td.cur  { background:var(--mario); color:var(--white); animation:shake .15s steps(2) infinite; }
+
+/* ═══ SPEED SLIDER ═══ */
+.speed-wrap { display:flex; align-items:center; gap:8px; }
+.speed-wrap label { font-size:.45rem; color:var(--dark); }
+input[type=range] {
+  accent-color:var(--mario);
+  height:8px; cursor:pointer;
+}
+
+/* ═══ HASH TABLE VIZ ═══ */
+.hash-bucket {
+  display:flex; align-items:center; gap:6px;
+  margin-bottom:5px;
+}
+.hash-idx {
+  background:var(--brick); color:var(--white);
+  border:2px solid var(--shadow);
+  width:36px; height:36px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:.5rem; flex-shrink:0;
+}
+.hash-cell {
+  background:var(--block); color:var(--white);
+  border:2px solid var(--shadow);
+  padding:4px 8px; font-size:.5rem;
+  animation:blockPop .15s steps(3);
+}
+.hash-empty { color:var(--ground); font-size:.5rem; font-family:'VT323',monospace; }
+
+/* ═══ TRIE VIZ ═══ */
+.trie-node {
+  display:inline-flex; align-items:center; justify-content:center;
+  width:38px; height:38px;
+  background:var(--purple); color:var(--white);
+  border:3px solid var(--shadow); box-shadow:2px 2px 0 var(--shadow);
+  font-size:.55rem;
+}
+.trie-node.end { background:var(--mario); }
+.trie-edge { color:var(--dark); font-family:'VT323',monospace; font-size:1rem; margin:0 2px; }
+
+/* ═══ HEAP VIZ ═══ */
+.heap-node {
+  display:inline-flex; align-items:center; justify-content:center;
+  width:42px; height:42px;
+  background:var(--pipe2); color:var(--white);
+  border:3px solid var(--shadow); box-shadow:2px 2px 0 var(--shadow);
+  font-size:.6rem; border-radius:0;
+}
+.heap-node.root-h { background:var(--mario); }
+
+/* ═══ GROUND DECORATION ═══ */
+.ground-bar {
+  position:fixed; bottom:0; left:0; right:0; height:32px;
+  background:var(--ground);
+  border-top:4px solid var(--shadow);
+  z-index:5;
+  display:flex; overflow:hidden;
+}
+.ground-block {
+  width:32px; height:32px; flex-shrink:0;
+  background:var(--ground);
+  border-right:2px solid var(--ground2);
+  position:relative;
+}
+.ground-block::before {
+  content:''; position:absolute; top:2px; left:2px; right:2px; height:3px;
+  background:rgba(255,255,255,.2);
+}
+
+/* ═══ STARS DECORATION ═══ */
+@keyframes starFloat {
+  0%,100%{transform:translateY(0) rotate(0)} 50%{transform:translateY(-6px) rotate(10deg)}
+}
+.star-deco { animation:starFloat 2s ease-in-out infinite; display:inline-block; }
+
+/* ═══ PIXEL ART MARIO FACE ═══ */
+.mario-face {
+  font-size:1.4rem; display:inline-block;
+  animation:walk 0.4s steps(2) infinite;
+}
+@keyframes walk { from{transform:scaleX(1)} to{transform:scaleX(-1)} }
+
+/* ═══ SECTION DIVIDER ═══ */
+.pipe-divider {
+  display:flex; align-items:center; gap:12px;
+  margin:16px 0 12px;
+}
+.pipe-block {
+  background:var(--pipe); border:3px solid var(--shadow);
+  box-shadow:3px 3px 0 var(--shadow);
+  padding:4px 10px; color:var(--white); font-size:.5rem;
+}
+.pipe-line { flex:1; height:4px; background:var(--shadow); }
+
+/* ═══ STEP CONTROLS ═══ */
+.step-controls {
+  display:flex; gap:6px; align-items:center; flex-wrap:wrap;
+  margin-top:10px; padding:10px;
+  background:var(--dark); border:3px solid var(--shadow);
+}
+.step-info { color:var(--coin); font-size:.45rem; margin-left:auto; }
+
+/* ═══ RESPONSIVE ═══ */
+@media (max-width:600px) {
+  .hero-title { font-size:1rem; }
+  .world-tab  { font-size:.4rem; padding:8px 8px; }
+  .card-header { font-size:.5rem; }
+}
+
+/* ── BONUS NAV TABS ── */
+.quiz-tab { background: #e8001c !important; }
+.quiz-tab.active { background: #ff4444 !important; }
+.codegen-tab { background: #1a6bbf !important; color: #fff !important; }
+.codegen-tab.active { background: #2e8ee8 !important; color: #fff !important; }
+.ai-tab { background: #228b22 !important; color: #fff !important; }
+.ai-tab.active { background: #2ecc40 !important; color: #fff !important; }
+
+/* ── QUIZ STYLES ── */
+.quiz-hud { display:flex; flex-wrap:wrap; gap:10px; background:var(--black); border:3px solid var(--coin); padding:8px 14px; margin-bottom:14px; box-shadow:3px 3px 0 var(--coin2); }
+.q-stat { font-size:8px; color:#fff; }
+.q-stat span { color:var(--coin); }
+.quiz-start { text-align:center; padding:20px; }
+.quiz-title-box { background:var(--question); border:4px solid var(--black); box-shadow:4px 4px 0 var(--black); padding:12px 20px; font-size:11px; color:var(--black); display:inline-block; margin-bottom:14px; animation:tb 0.5s ease infinite alternate; }
+.quiz-desc { font-size:7px; color:var(--brick); margin-top:6px; font-family:'VT323',monospace; font-size:16px; }
+.quiz-question-box { background:var(--black); border:4px solid var(--coin); box-shadow:4px 4px 0 var(--coin2); padding:16px; font-size:9px; color:#fff; margin-bottom:14px; line-height:1.8; min-height:70px; }
+.quiz-options { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px; }
+.q-opt { background:var(--question); border:3px solid var(--black); box-shadow:3px 3px 0 var(--black),inset -2px -2px 0 var(--question2); padding:10px 12px; font-size:7px; color:var(--black); cursor:pointer; transition:transform 0.1s,box-shadow 0.1s; font-family:'Press Start 2P',monospace; text-align:left; line-height:1.6; }
+.q-opt:hover { transform:translateY(-2px); box-shadow:5px 5px 0 var(--black); }
+.q-opt.correct { background:var(--green) !important; color:#fff !important; box-shadow:3px 3px 0 var(--black) !important; }
+.q-opt.wrong { background:var(--red) !important; color:#fff !important; box-shadow:3px 3px 0 var(--black) !important; }
+.q-opt:disabled { cursor:not-allowed; }
+.quiz-progress { background:var(--black); border:3px solid var(--white); height:18px; margin-bottom:10px; }
+.quiz-progress-fill { background:var(--coin); height:100%; transition:width 1s linear; width:100%; }
+.quiz-end { text-align:center; padding:16px; }
+.q-final-score { font-size:14px; color:var(--coin); margin:12px 0; text-shadow:2px 2px 0 var(--coin2); }
+.q-grade { font-size:9px; color:var(--green); margin:8px 0 12px; }
+.q-review-list { text-align:left; max-height:200px; overflow-y:auto; background:var(--black); border:2px solid var(--coin); padding:8px; }
+.q-review-item { font-size:7px; padding:4px 0; border-bottom:1px solid #333; font-family:'VT323',monospace; font-size:14px; }
+.q-review-item.ok { color:var(--green); }
+.q-review-item.bad { color:var(--red); }
+
+/* ── CODE GEN STYLES ── */
+.code-output-wrap { background:#0d1117; border:4px solid var(--black); box-shadow:4px 4px 0 var(--black); margin-bottom:10px; }
+.code-toolbar { background:#1a1a2e; border-bottom:2px solid var(--black); padding:6px 12px; display:flex; justify-content:space-between; align-items:center; }
+.code-block { padding:14px; font-family:'VT323',monospace; font-size:15px; color:#a8ff78; line-height:1.6; white-space:pre-wrap; max-height:400px; overflow-y:auto; }
+.ai-loading { display:flex; align-items:center; gap:12px; padding:10px; font-size:8px; color:var(--coin); margin:8px 0; }
+.pixel-loader { width:20px; height:20px; background:var(--coin); animation:pldr 0.4s steps(2) infinite; }
+@keyframes pldr { 0%{transform:scale(1)} 50%{transform:scale(0.5)} 100%{transform:scale(1)} }
+
+/* ── CHAT STYLES ── */
+.chat-container { background:var(--sky); border:4px solid var(--black); box-shadow:inset 2px 2px 0 #92b8fd; min-height:320px; max-height:400px; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:12px; margin-bottom:10px; }
+.chat-msg { display:flex; gap:10px; align-items:flex-start; animation:np 0.2s steps(3) both; }
+.bot-msg { flex-direction:row; }
+.user-msg { flex-direction:row-reverse; }
+.chat-avatar { width:36px; height:36px; border:3px solid var(--black); box-shadow:2px 2px 0 var(--black); display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
+.bot-avatar { background:var(--green); }
+.user-avatar { background:var(--mario-blue); }
+.chat-bubble { background:var(--cream); border:3px solid var(--black); box-shadow:3px 3px 0 var(--black); padding:10px 14px; font-family:'VT323',monospace; font-size:15px; color:var(--black); line-height:1.6; max-width:75%; }
+.user-msg .chat-bubble { background:var(--mario-blue); color:#fff; }
+.chat-bubble p { margin:2px 0; }
+.chat-bubble .code-inline { background:var(--black); color:var(--green); padding:2px 6px; font-family:'VT323',monospace; }
+.bot-thinking .chat-bubble { color:var(--coin); }
+.quick-prompts { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+.qp { background:var(--question); border:2px solid var(--black); box-shadow:2px 2px 0 var(--black); padding:5px 10px; font-size:7px; color:var(--black); cursor:pointer; font-family:'Press Start 2P',monospace; transition:transform 0.1s; }
+.qp:hover { transform:translateY(-2px); box-shadow:4px 4px 0 var(--black); }
+.chat-input-row { display:flex; gap:8px; }
+.chat-input { flex:1; background:#fff; border:3px solid var(--black); box-shadow:3px 3px 0 var(--black); padding:8px 12px; font-family:'Press Start 2P',monospace; font-size:8px; color:var(--black); outline:none; }
+.chat-input:focus { border-color:var(--coin); }
+
+</style>
+</head>
+<body>
+
+<!-- Clouds -->
+<div class="cloud-layer" id="clouds"></div>
+
+<div class="container">
+
+  <!-- ═══ HERO ═══ -->
+  <div class="hero">
+    <div class="hero-title">
+      <span class="star-deco">★</span>
+      DSA <span>WORLD</span>
+      <span class="star-deco" style="animation-delay:.5s">★</span>
+    </div>
+    <div class="hero-title" style="font-size:clamp(.7rem,2vw,1rem); margin-top:8px;">
+      Advanced C++ Project
+    </div>
+    <div class="hero-sub">▶ All Data Structures + Algorithms — From Scratch</div>
+    <div class="coin-counter">
+      <span class="coin-spin">◉</span>
+      COMPARISONS: <span id="global-cmp">0</span> &nbsp;|&nbsp;
+      SWAPS: <span id="global-swp">0</span> &nbsp;|&nbsp;
+      <span class="coin-spin" style="animation-delay:.25s">◉</span>
+      SCORE: <span id="global-score">0</span>
+    </div>
+  </div>
+
+  <!-- ═══ WORLD TABS ═══ -->
+  <div class="world-tabs">
+    <div class="world-tab active" onclick="showTab('ll',this)"><span class="w-num">WORLD 1</span>Linked List</div>
+    <div class="world-tab" onclick="showTab('stack',this)"><span class="w-num">WORLD 2</span>Stack</div>
+    <div class="world-tab" onclick="showTab('bst',this)"><span class="w-num">WORLD 3</span>BST</div>
+    <div class="world-tab" onclick="showTab('avl',this)"><span class="w-num">WORLD 4</span>AVL Tree</div>
+    <div class="world-tab" onclick="showTab('graph',this)"><span class="w-num">WORLD 5</span>Graph</div>
+    <div class="world-tab" onclick="showTab('heap',this)"><span class="w-num">WORLD 6</span>Heap</div>
+    <div class="world-tab" onclick="showTab('hash',this)"><span class="w-num">WORLD 7</span>HashMap</div>
+    <div class="world-tab" onclick="showTab('trie',this)"><span class="w-num">WORLD 8</span>Trie</div>
+    <div class="world-tab" onclick="showTab('sort',this)"><span class="w-num">WORLD 9</span>Sorting</div>
+    <div class="world-tab" onclick="showTab('search',this)"><span class="w-num">WORLD 10</span>Search</div>
+    <div class="world-tab" onclick="showTab('dp',this)"><span class="w-num">WORLD 11</span>Dyn. Prog.</div>
+    <div class="world-tab quiz-tab" onclick="showTab('quiz',this)"><span class="w-num">BONUS 1</span>&#127381; Quiz</div>
+    <div class="world-tab codegen-tab" onclick="showTab('codegen',this)"><span class="w-num">BONUS 2</span>&#128187; Code Gen</div>
+    <div class="world-tab ai-tab" onclick="showTab('ai',this)"><span class="w-num">BONUS 3</span>&#129302; AI Chat</div>
+  </div>
+
+  <!-- ═══════════════════════════════════ -->
+  <!--  WORLD 1 — LINKED LIST              -->
+  <!-- ═══════════════════════════════════ -->
+  <div class="panel active" id="tab-ll">
+    <div class="card">
+      <div class="card-header">★ WORLD 1: SINGLY LINKED LIST <span class="badge">O(1) FRONT</span></div>
+      <div class="card-body">
+        <div class="controls">
+          <input class="pixel-input" type="number" id="ll-val" value="42" placeholder="value"/>
+          <button class="btn" onclick="llPushBack()">+ BACK</button>
+          <button class="btn blue" onclick="llPushFront()">+ FRONT</button>
+          <button class="btn red" onclick="llRemove()">✕ REMOVE</button>
+          <button class="btn gold" onclick="llReverse()">↺ REVERSE</button>
+          <button class="btn sm" onclick="llClear()">CLEAR</button>
+        </div>
+        <div class="viz-area" id="ll-viz"></div>
+        <div class="log-terminal" id="ll-log">&gt; READY. PUSH SOME VALUES.</div>
+        <div class="chips">
+          <span class="chip">INSERT FRONT O(1)</span>
+          <span class="chip">INSERT BACK O(n)</span>
+          <span class="chip red">DELETE O(n)</span>
+          <span class="chip blue">SPACE O(n)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ -->
+  <!--  WORLD 2 — STACK                    -->
+  <!-- ═══════════════════════════════════ -->
+  <div class="panel" id="tab-stack">
+    <div class="card">
+      <div class="card-header">★ WORLD 2: STACK (LIFO) <span class="badge">PUSH/POP</span></div>
+      <div class="card-body">
+        <div class="controls">
+          <input class="pixel-input" type="number" id="st-val" value="7" placeholder="value"/>
+          <button class="btn" onclick="stPush()">PUSH</button>
+          <button class="btn red" onclick="stPop()">POP</button>
+          <button class="btn gold" onclick="stPeek()">PEEK</button>
+          <button class="btn sm" onclick="stClear()">CLEAR</button>
+        </div>
+        <div class="viz-area tall" id="st-viz"></div>
+        <div class="log-terminal" id="st-log">&gt; STACK EMPTY. PUSH SOMETHING.</div>
+        <div class="chips">
+          <span class="chip">PUSH O(1)</span><span class="chip">POP O(1)</span>
+          <span class="chip">PEEK O(1)</span><span class="chip blue">SPACE O(n)</span>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">★ BONUS: BALANCED PARENS CHECKER</div>
+      <div class="card-body">
+        <div class="controls">
+          <input class="pixel-input wide" type="text" id="paren-val" value="({[]})"/>
+          <button class="btn" onclick="checkParens()">CHECK</button>
+        </div>
+        <div class="log-terminal" id="paren-log">&gt; ENTER BRACKETS AND CHECK.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ -->
+  <!--  WORLD 3 — BST                      -->
+  <!-- ═══════════════════════════════════ -->
+  <div class="panel" id="tab-bst">
+    <div class="card">
+      <div class="card-header">★ WORLD 3: BINARY SEARCH TREE <span class="badge">O(h)</span></div>
+      <div class="card-body">
+        <div class="controls">
+          <input class="pixel-input" type="number" id="bst-val" value="50" placeholder="value"/>
+          <button class="btn" onclick="bstInsert()">INSERT</button>
+          <button class="btn blue" onclick="bstSearch()">SEARCH</button>
+          <button class="btn gold" onclick="bstInorder()">INORDER</button>
+          <button class="btn purple" onclick="bstLevel()">LEVEL</button>
+          <button class="btn red sm" onclick="bstReset()">RESET</button>
+        </div>
+        <div class="svg-wrap"><svg id="bst-svg" width="100%" height="280"></svg></div>
+        <div class="log-terminal" id="bst-log">&gt; INSERT VALUES TO BUILD BST.</div>
+        <div class="chips">
+          <span class="chip">INSERT O(h)</span><span class="chip">SEARCH O(h)</span>
+          <span class="chip green">BALANCED O(log n)</span><span class="chip red">SKEWED O(n)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ -->
+  <!--  WORLD 4 — AVL TREE (NEW!)          -->
+  <!-- ═══════════════════════════════════ -->
+  <div class="panel" id="tab-avl">
+    <div class="card">
+      <div class="card-header">★ WORLD 4: AVL TREE — SELF BALANCING <span class="badge">NEW!</span></div>
+      <div class="card-body">
+        <div class="controls">
+          <input class="pixel-input" type="number" id="avl-val" value="30" placeholder="value"/>
+          <button class="btn" onclick="avlInsert()">INSERT</button>
+          <button class="btn blue" onclick="avlSearch()">SEARCH</button>
+          <button class="btn gold" onclick="avlInorder()">INORDER</button>
+          <button class="btn red sm" onclick="avlReset()">RESET</button>
+        </div>
+        <div class="svg-wrap"><svg id="avl-svg" width="100%" height="300"></svg></div>
+        <div class="log-terminal" id="avl-log">&gt; AVL AUTO-BALANCES AFTER EVERY INSERT.</div>
+        <div class="chips">
+          <span class="chip green">ALWAYS O(log n)</span>
+          <span class="chip">ROTATIONS: LL RR LR RL</span>
+          <span class="chip blue">HEIGHT BALANCED</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ -->
+  <!--  WORLD 5 — GRAPH                    -->
+  <!-- ═══════════════════════════════════ -->
+  <div class="panel" id="tab-graph">
+    <div class="card">
+      <div class="card-header">★ WORLD 5: GRAPH — BFS, DFS, DIJKSTRA <span class="badge">NEW!</span></div>
+      <div class="card-body">
+        <div class="controls">
+          <button class="btn" onclick="gRunBFS()">▶ BFS</button>
+          <button class="btn blue" onclick="gRunDFS()">▶ DFS</button>
+          <button class="btn gold" onclick="gRunDijkstra()">▶ DIJKSTRA</button>
+          <button class="btn red sm" onclick="gReset()">RESET</button>
+          <div class="speed-wrap">
+            <label>SPEED</label>
+            <input type="range" id="graph-speed" min="100" max="1000" value="500" step="100"/>
+          </div>
+        </div>
+        <div class="svg-wrap">
+          <svg id="graph-svg" width="100%" height="300" viewBox="0 0 580 300"></svg>
+        </div>
+        <div class="stat-row">
+          <div class="stat-box">ALGO<span class="stat-val" id="g-algo-name">—</span></div>
+          <div class="stat-box">VISITED<span class="stat-val" id="g-visited">0</span></div>
+          <div class="stat-box green-stat">ORDER<span class="stat-val" id="g-order" style="font-size:.5rem">—</span></div>
+        </div>
+        <div class="log-terminal" id="graph-log">&gt; CLICK BFS, DFS, OR DIJKSTRA.</div>
+        <div class="chips">
+          <span class="chip">BFS/DFS O(V+E)</span>
+          <span class="chip green">DIJKSTRA O((V+E) log V)</span>
+          <span class="chip blue">ADJACENCY LIST</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ -->
+  <!--  WORLD 6 — HEAP (NEW!)              -->
+  <!-- ═══════════════════════════════════ -->
+  <div class="panel" id="tab-heap">
+    <div class="card">
+      <div class="card-header">★ WORLD 6: MIN-HEAP / MAX-HEAP <span class="badge">FROM SCRATCH</span></div>
+      <div class="card-body">
+        <div class="controls">
+          <input class="pixel-input" type="number" id="heap-val" value="15" placeholder="value"/>
+          <button class="btn" onclick="heapInsert()">INSERT</button>
+          <button class="btn red" onclick="heapExtract()">EXTRACT ROOT</button>
+          <button class="btn gold" onclick="heapSort()">HEAP SORT</button>
+          <button class="btn sm" id="heap-toggle" onclick="toggleHeapType()">MODE: MIN</button>
+          <button class="btn sm red" onclick="heapClear()">CLEAR</button>
+        </div>
+        <div class="svg-wrap"><svg id="heap-svg" width="100%" height="240"></svg></div>
+        <div class="viz-area" id="heap-arr" style="margin-top:8px;"></div>
+        <div class="log-terminal" id="heap-log">&gt; MIN-HEAP: ROOT IS ALWAYS SMALLEST.</div>
+        <div class="chips">
+          <span class="chip">INSERT O(log n)</span>
+          <span class="chip">EXTRACT O(log n)</span>
+          <span class="chip green">HEAP SORT O(n log n)</span>
+          <span class="chip blue">SPACE O(n)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ -->
+  <!--  WORLD 7 — HASHMAP (NEW!)           -->
+  <!-- ═══════════════════════════════════ -->
+  <div class="panel" id="tab-hash">
+    <div class="card">
+      <div class="card-header">★ WORLD 7: HASHMAP FROM SCRATCH <span class="badge">CHAINING</span></div>
+      <div class="card-body">
+        <div class="controls">
+          <input class="pixel-input" type="text" id="hash-key" value="name" placeholder="key"/>
+          <input class="pixel-input" type="text" id="hash-val" value="Mario" placeholder="value"/>
+          <button class="btn" onclick="hashPut()">PUT</button>
+          <button class="btn blue" onclick="hashGet()">GET</button>
+          <button class="btn red" onclick="hashDelete()">DELETE</button>
+          <button class="btn sm" onclick="hashClear()">CLEAR</button>
+        </div>
+        <div id="hash-viz" style="padding:8px; background:var(--white); border:3px solid var(--shadow);"></div>
+        <div class="stat-row">
+          <div class="stat-box">BUCKETS<span class="stat-val">8</span></div>
+          <div class="stat-box green-stat">ENTRIES<span class="stat-val" id="hash-count">0</span></div>
+          <div class="stat-box red-stat">LOAD FACTOR<span class="stat-val" id="hash-lf">0.00</span></div>
+        </div>
+        <div class="log-terminal" id="hash-log">&gt; HASHMAP USES CHAINING FOR COLLISIONS.</div>
+        <div class="chips">
+          <span class="chip green">AVG O(1)</span><span class="chip red">WORST O(n)</span>
+          <span class="chip">HASH FN: key.charCodeAt()</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ -->
+  <!--  WORLD 8 — TRIE (NEW!)              -->
+  <!-- ═══════════════════════════════════ -->
+  <div class="panel" id="tab-trie">
+    <div class="card">
+      <div class="card-header">★ WORLD 8: TRIE (PREFIX TREE) <span class="badge">AUTOCOMPLETE</span></div>
+      <div class="card-body">
+        <div class="controls">
+          <input class="pixel-input wide" type="text" id="trie-word" value="cat" placeholder="word"/>
+          <button class="btn" onclick="trieInsert()">INSERT</button>
+          <button class="btn blue" onclick="trieSearch()">SEARCH</button>
+          <button class="btn gold" onclick="triePrefix()">PREFIX?</button>
+          <button class="btn purple" onclick="trieAutoComplete()">AUTOCOMPLETE</button>
+          <button class="btn sm red" onclick="trieClear()">CLEAR</button>
+        </div>
+        <div class="svg-wrap" style="min-height:220px;">
+          <svg id="trie-svg" width="100%" height="220"></svg>
+        </div>
+        <div class="log-terminal" id="trie-log">&gt; INSERT WORDS: cat, car, card, care, bat</div>
+        <div class="chips">
+          <span class="chip green">INSERT O(L)</span><span class="chip green">SEARCH O(L)</span>
+          <span class="chip">L = WORD LENGTH</span><span class="chip blue">AUTOCOMPLETE</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ -->
+  <!--  WORLD 9 — SORTING                  -->
+  <!-- ═══════════════════════════════════ -->
+  <div class="panel" id="tab-sort">
+    <div class="card">
+      <div class="card-header">★ WORLD 9: SORTING ALGORITHMS <span class="badge">STEP MODE</span></div>
+      <div class="card-body">
+        <div class="controls">
+          <select id="sort-algo" style="background:var(--cream);border:3px solid var(--shadow);padding:8px;font-family:'Press Start 2P',monospace;font-size:.5rem;color:var(--dark);">
+            <option value="bubble">BUBBLE SORT</option>
+            <option value="selection">SELECTION SORT</option>
+            <option value="insertion">INSERTION SORT</option>
+            <option value="merge">MERGE SORT</option>
+            <option value="quick">QUICK SORT</option>
+            <option value="heap">HEAP SORT</option>
+          </select>
+          <input class="pixel-input wide" type="text" id="sort-custom" placeholder="e.g. 5,3,8,1,9" value=""/>
+          <button class="btn" onclick="sortRun()">▶ AUTO</button>
+          <button class="btn gold" onclick="sortShuffle()">SHUFFLE</button>
+        </div>
+        <div class="step-controls">
+          <button class="btn sm" onclick="sortStepBack()">◀ PREV</button>
+          <button class="btn sm gold" id="sort-play-btn" onclick="sortTogglePlay()">▶ PLAY</button>
+          <button class="btn sm" onclick="sortStepFwd()">NEXT ▶</button>
+          <div class="speed-wrap">
+            <label>SPEED</label>
+            <input type="range" id="sort-speed" min="50" max="800" value="300" step="50"/>
+          </div>
+          <span class="step-info" id="sort-step-info">STEP: 0/0</span>
+        </div>
+        <div class="bars-area" id="sort-bars"></div>
+        <div class="stat-row">
+          <div class="stat-box red-stat">COMPARISONS<span class="stat-val" id="sort-cmp">0</span></div>
+          <div class="stat-box green-stat">SWAPS<span class="stat-val" id="sort-swp">0</span></div>
+          <div class="stat-box">STATUS<span class="stat-val" id="sort-status" style="font-size:.45rem">READY</span></div>
+        </div>
+        <div class="log-terminal" id="sort-log">&gt; CHOOSE ALGO, CLICK PLAY OR STEP.</div>
+        <div id="sort-complexity" class="chips">
+          <span class="chip">BEST O(n)</span><span class="chip red">AVG O(n^2)</span>
+          <span class="chip red">WORST O(n^2)</span><span class="chip blue">SPACE O(1)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ -->
+  <!--  WORLD 10 — SEARCHING               -->
+  <!-- ═══════════════════════════════════ -->
+  <div class="panel" id="tab-search">
+    <div class="card">
+      <div class="card-header">★ WORLD 10: LINEAR &amp; BINARY SEARCH <span class="badge">STEP MODE</span></div>
+      <div class="card-body">
+        <div class="controls">
+          <input class="pixel-input" type="number" id="srch-val" value="23" placeholder="target"/>
+          <button class="btn" onclick="runLinear()">LINEAR</button>
+          <button class="btn blue" onclick="runBinary()">BINARY</button>
+          <button class="btn sm" onclick="resetSearch()">RESET</button>
+        </div>
+        <div class="viz-area" id="srch-viz"></div>
+        <div class="stat-row">
+          <div class="stat-box red-stat">COMPARISONS<span class="stat-val" id="srch-cmp">0</span></div>
+          <div class="stat-box green-stat">RESULT<span class="stat-val" id="srch-res" style="font-size:.45rem">—</span></div>
+        </div>
+        <div class="log-terminal" id="srch-log">&gt; ARRAY: [2,5,8,12,16,23,38,56,72,91]</div>
+        <div class="chips">
+          <span class="chip red">LINEAR O(n)</span>
+          <span class="chip green">BINARY O(log n)</span>
+          <span class="chip">BINARY NEEDS SORTED</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ -->
+  <!--  WORLD 11 — DYNAMIC PROGRAMMING     -->
+  <!-- ═══════════════════════════════════ -->
+  <div class="panel" id="tab-dp">
+    <div class="card">
+      <div class="card-header">★ WORLD 11-A: FIBONACCI (MEMOIZATION)</div>
+      <div class="card-body">
+        <div class="controls">
+          <input class="pixel-input" type="number" id="fib-n" value="10" min="1" max="20"/>
+          <button class="btn" onclick="runFib()">COMPUTE</button>
+        </div>
+        <div class="viz-area" id="fib-viz" style="flex-wrap:wrap;"></div>
+        <div class="log-terminal" id="fib-log">&gt; O(n) WITH MEMOIZATION VS O(2^n) NAIVE.</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">★ WORLD 11-B: 0/1 KNAPSACK DP TABLE</div>
+      <div class="card-body">
+        <div class="controls">
+          <span style="font-family:'VT323',monospace;font-size:1rem;color:var(--dark);">Items: (1kg,$1) (3kg,$4) (4kg,$5) (5kg,$7)</span>
+          <input class="pixel-input" type="number" id="ks-cap" value="7" min="1" max="10" placeholder="W"/>
+          <button class="btn" onclick="runKnapsack()">SOLVE</button>
+        </div>
+        <div class="dp-wrap" id="ks-table"></div>
+        <div class="log-terminal" id="ks-log">&gt; CLICK SOLVE TO BUILD DP TABLE.</div>
+        <div class="chips">
+          <span class="chip">TIME O(n*W)</span><span class="chip blue">SPACE O(n*W)</span>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">★ WORLD 11-C: COIN CHANGE + LCS</div>
+      <div class="card-body">
+        <div class="controls">
+          <button class="btn" onclick="runCoinChange()">COIN CHANGE</button>
+          <button class="btn blue" onclick="runLCS()">LCS</button>
+        </div>
+        <div class="log-terminal" id="dp3-log">&gt; COINS={1,5,6,9} AMOUNT=11 | LCS("ABCBDAB","BDCAB")</div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════ -->
+  <!--  BONUS 1 — QUIZ MODE               -->
+  <!-- ═══════════════════════════════════ -->
+  <div class="panel" id="tab-quiz">
+    <div class="card">
+      <div class="card-header">&#127381; BONUS 1: DSA QUIZ MODE <span class="badge">20 QUESTIONS</span></div>
+      <div class="card-body">
+        <div class="quiz-hud">
+          <div class="q-stat">Q: <span id="q-num">0</span>/20</div>
+          <div class="q-stat">SCORE: <span id="q-score">0</span></div>
+          <div class="q-stat">STREAK: <span id="q-streak">0</span>&#128293;</div>
+          <div class="q-stat">TIME: <span id="q-timer">30</span>s</div>
+        </div>
+        <div id="quiz-start-screen" class="quiz-start">
+          <div class="quiz-title-box">&#9733; DSA KNOWLEDGE TEST &#9733;</div>
+          <p class="quiz-desc">20 questions covering Linked Lists, Stacks, Trees, Graphs, Sorting &amp; DP.</p>
+          <p class="quiz-desc">Each question has 30 seconds. Streak bonuses apply!</p>
+          <button class="btn gold" onclick="quizStart()" style="margin-top:16px;font-size:10px;padding:12px 24px;">&#9654; START QUIZ</button>
+        </div>
+        <div id="quiz-game-screen" style="display:none">
+          <div class="quiz-question-box" id="q-text">QUESTION GOES HERE</div>
+          <div class="quiz-options" id="q-opts"></div>
+          <div class="quiz-progress"><div class="quiz-progress-fill" id="q-prog"></div></div>
+        </div>
+        <div id="quiz-end-screen" style="display:none" class="quiz-end">
+          <div class="quiz-title-box">&#127942; RESULTS &#127942;</div>
+          <div class="q-final-score">SCORE: <span id="q-final">0</span> / 200</div>
+          <div id="q-grade-msg" class="q-grade"></div>
+          <div id="q-review" class="q-review-list"></div>
+          <button class="btn gold" onclick="quizRestart()" style="margin-top:12px">&#9654; PLAY AGAIN</button>
+        </div>
+        <div class="log-terminal" id="quiz-log">&gt; CLICK START QUIZ TO BEGIN!</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ -->
+  <!--  BONUS 2 — CODE GENERATOR          -->
+  <!-- ═══════════════════════════════════ -->
+  <div class="panel" id="tab-codegen">
+    <div class="card">
+      <div class="card-header">&#128187; BONUS 2: C++ CODE GENERATOR <span class="badge">AI POWERED</span></div>
+      <div class="card-body">
+        <p style="font-size:7px;color:#8b4513;margin-bottom:12px">SELECT A DATA STRUCTURE AND OPERATION — GET CLEAN C++ CODE INSTANTLY</p>
+        <div class="ctrl">
+          <select class="sel" id="cg-ds">
+            <option value="linked_list">Linked List</option>
+            <option value="stack">Stack</option>
+            <option value="queue">Queue</option>
+            <option value="bst">Binary Search Tree</option>
+            <option value="avl">AVL Tree</option>
+            <option value="heap">Min/Max Heap</option>
+            <option value="hashmap">Hash Map</option>
+            <option value="trie">Trie</option>
+            <option value="graph">Graph (BFS/DFS)</option>
+            <option value="dijkstra">Dijkstra Algorithm</option>
+          </select>
+          <select class="sel" id="cg-op">
+            <option value="full">Full Implementation</option>
+            <option value="insert">Insert Operation</option>
+            <option value="delete">Delete Operation</option>
+            <option value="search">Search Operation</option>
+            <option value="traverse">Traversal</option>
+          </select>
+          <select class="sel" id="cg-lang">
+            <option value="cpp">C++17</option>
+            <option value="python">Python 3</option>
+            <option value="java">Java</option>
+          </select>
+          <button class="btn gold" onclick="generateCode()" id="cg-btn">&#9654; GENERATE CODE</button>
+        </div>
+        <div id="cg-loading" style="display:none" class="ai-loading">
+          <div class="pixel-loader"></div>
+          <span>GENERATING CODE...</span>
+        </div>
+        <div class="code-output-wrap">
+          <div class="code-toolbar">
+            <span id="cg-title" style="font-size:7px;color:var(--coin)">GENERATED CODE</span>
+            <button class="btn sm" onclick="copyCode()" id="cg-copy">COPY</button>
+          </div>
+          <pre class="code-block" id="cg-output">// Select options above and click GENERATE CODE
+// AI will write clean, commented C++ code for you!</pre>
+        </div>
+        <div class="log-terminal" id="cg-log">&gt; READY. SELECT DS AND CLICK GENERATE.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ -->
+  <!--  BONUS 3 — AI CHATBOT              -->
+  <!-- ═══════════════════════════════════ -->
+  <div class="panel" id="tab-ai">
+    <div class="card">
+      <div class="card-header">&#129302; BONUS 3: DSA AI ASSISTANT <span class="badge">CLAUDE AI</span></div>
+      <div class="card-body">
+        <div class="chat-container" id="chat-messages">
+          <div class="chat-msg bot-msg">
+            <div class="chat-avatar bot-avatar">&#129302;</div>
+            <div class="chat-bubble">
+              <p>HELLO! I AM YOUR DSA AI ASSISTANT!</p>
+              <p style="margin-top:6px">ASK ME ANYTHING ABOUT:</p>
+              <p>&#9658; DATA STRUCTURES (LINKED LIST, BST, HEAP...)</p>
+              <p>&#9658; ALGORITHMS (SORTING, DIJKSTRA, DP...)</p>
+              <p>&#9658; C++ CODE HELP</p>
+              <p>&#9658; TIME/SPACE COMPLEXITY</p>
+              <p>&#9658; VIVA QUESTIONS!</p>
+            </div>
+          </div>
+        </div>
+        <div class="quick-prompts">
+          <span class="qp" onclick="sendQuick(this)">What is AVL tree?</span>
+          <span class="qp" onclick="sendQuick(this)">Explain Dijkstra</span>
+          <span class="qp" onclick="sendQuick(this)">Quicksort vs Mergesort</span>
+          <span class="qp" onclick="sendQuick(this)">What is Big O?</span>
+          <span class="qp" onclick="sendQuick(this)">Hash collision explained</span>
+          <span class="qp" onclick="sendQuick(this)">When to use Trie?</span>
+        </div>
+        <div class="chat-input-row">
+          <input type="text" class="chat-input" id="chat-inp" placeholder="ASK ABOUT ANY DSA TOPIC..." onkeydown="if(event.key==='Enter')sendChat()"/>
+          <button class="btn gold" onclick="sendChat()" id="chat-btn">SEND &#9654;</button>
+        </div>
+        <div class="log-terminal" id="ai-log">&gt; AI ASSISTANT READY. TYPE YOUR QUESTION!</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end container -->
+
+<!-- Ground decoration -->
+<div class="ground-bar" id="ground-bar"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  GLOBALS & HELPERS
+// ═══════════════════════════════════════════════════════
+let globalCmp=0, globalSwp=0, globalScore=0;
+
+function addCmp(n=1){ globalCmp+=n; document.getElementById('global-cmp').textContent=globalCmp; }
+function addSwp(n=1){ globalSwp+=n; document.getElementById('global-swp').textContent=globalSwp; addScore(n*10); }
+function addScore(n){ globalScore+=n; document.getElementById('global-score').textContent=globalScore; }
+
+function delay(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+function log(id, msg, cls=''){
+  const el=document.getElementById(id);
+  el.innerHTML+=`<div class="${cls}">&gt; ${msg}</div>`;
+  el.scrollTop=el.scrollHeight;
+}
+function logClear(id, msg='READY'){
+  document.getElementById(id).innerHTML=`&gt; ${msg}`;
+}
+
+function showTab(id, el){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.world-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  if(el) el.classList.add('active');
+  // init draws on first show
+  if(id==='bst')    setTimeout(bstDraw,50);
+  if(id==='avl')    setTimeout(avlDraw,50);
+  if(id==='graph')  setTimeout(gDraw,50);
+  if(id==='heap')   setTimeout(heapDraw,50);
+  if(id==='trie')   setTimeout(trieDraw,50);
+  if(id==='sort')   sortInit();
+  if(id==='search') resetSearch();
+}
+
+// ═══ CLOUDS ═══
+(function(){
+  const wrap=document.getElementById('clouds');
+  for(let i=0;i<12;i++){
+    const c=document.createElement('div');
+    c.className='cloud';
+    const s=40+Math.random()*60;
+    c.style.cssText=`width:${s}px;height:${s*0.6}px;top:${5+Math.random()*80}px;left:${Math.random()*100}%;background:#fff;box-shadow:${s/2}px 0 0 #fff,${s*0.25}px -${s*0.25}px 0 #fff;`;
+    wrap.appendChild(c);
+  }
+  const gb=document.getElementById('ground-bar');
+  for(let i=0;i<60;i++){
+    const b=document.createElement('div'); b.className='ground-block';
+    gb.appendChild(b);
+  }
+})();
+
+// ═══════════════════════════════════════════════════════
+//  WORLD 1 — LINKED LIST
+// ═══════════════════════════════════════════════════════
+let llData=[];
+function llRender(){
+  const viz=document.getElementById('ll-viz');
+  viz.innerHTML='';
+  if(!llData.length){ viz.innerHTML='<span style="font-family:VT323,monospace;font-size:1.1rem;color:var(--ground)">EMPTY LIST — NULL</span>'; return; }
+  llData.forEach((v,i)=>{
+    const n=document.createElement('div'); n.className='px-node'; n.textContent=v;
+    viz.appendChild(n);
+    if(i<llData.length-1){ const a=document.createElement('span'); a.className='px-arrow'; a.textContent='→'; viz.appendChild(a); }
+  });
+  const nullEl=document.createElement('span'); nullEl.className='px-arrow'; nullEl.textContent='→ NULL';
+  viz.appendChild(nullEl);
+}
+function llPushBack(){ const v=parseInt(document.getElementById('ll-val').value); if(isNaN(v))return; llData.push(v); llRender(); log('ll-log',`push_back(${v}) ✓ size=${llData.length}`,'l-ok'); addScore(5); }
+function llPushFront(){ const v=parseInt(document.getElementById('ll-val').value); if(isNaN(v))return; llData.unshift(v); llRender(); log('ll-log',`push_front(${v}) ✓ size=${llData.length}`,'l-ok'); addScore(5); }
+function llRemove(){ const v=parseInt(document.getElementById('ll-val').value); const i=llData.indexOf(v); if(i===-1){log('ll-log',`${v} NOT FOUND`,'l-warn');return;} llData.splice(i,1); llRender(); log('ll-log',`remove(${v}) ✓`,'l-ok'); }
+function llReverse(){ llData.reverse(); llRender(); log('ll-log','REVERSED ✓','l-info'); }
+function llClear(){ llData=[]; llRender(); logClear('ll-log','CLEARED.'); }
+llData=[5,10,20,30,40]; llRender();
+
+// ═══════════════════════════════════════════════════════
+//  WORLD 2 — STACK
+// ═══════════════════════════════════════════════════════
+let stData=[];
+function stRender(){
+  const viz=document.getElementById('st-viz');
+  viz.innerHTML='';
+  if(!stData.length){ viz.innerHTML='<span style="font-family:VT323,monospace;font-size:1.1rem;color:var(--ground)">EMPTY STACK</span>'; return; }
+  const wrapper=document.createElement('div');
+  wrapper.style.cssText='display:flex;flex-direction:column-reverse;gap:4px;width:100%;align-items:flex-start;';
+  stData.forEach((v,i)=>{
+    const n=document.createElement('div');
+    n.className='stack-node'+(i===stData.length-1?' top':'');
+    n.innerHTML=`<span>${v}</span><span style="font-size:.4rem;opacity:.6">${i===stData.length-1?'◀ TOP':''}</span>`;
+    wrapper.appendChild(n);
+  });
+  viz.appendChild(wrapper);
+}
+function stPush(){ const v=parseInt(document.getElementById('st-val').value); if(isNaN(v))return; stData.push(v); stRender(); log('st-log',`push(${v}) ✓`,'l-ok'); addScore(5); }
+function stPop(){ if(!stData.length){log('st-log','STACK UNDERFLOW!','l-warn');return;} const v=stData.pop(); stRender(); log('st-log',`pop() → ${v}`,'l-ok'); }
+function stPeek(){ if(!stData.length){log('st-log','EMPTY','l-warn');return;} log('st-log',`peek() → TOP = ${stData[stData.length-1]}`,'l-info'); }
+function stClear(){ stData=[]; stRender(); logClear('st-log','CLEARED.'); }
+function checkParens(){
+  const s=document.getElementById('paren-val').value;
+  const stack=[]; let ok=true;
+  for(const c of s){
+    if('({['.includes(c)) stack.push(c);
+    else if(')}]'.includes(c)){
+      if(!stack.length){ok=false;break;}
+      const t=stack.pop();
+      if((c===')'&&t!='(')||(c==='}'&&t!='{')||(c===']'&&t!='[')){{ok=false;break;}}
+    }
+  }
+  if(stack.length) ok=false;
+  document.getElementById('paren-log').innerHTML=`&gt; "${s}" → <span class="${ok?'l-ok':'l-warn'}">${ok?'✓ BALANCED!':'✗ UNBALANCED!'}</span>`;
+}
+stData=[1,2,3,4,5]; stRender();
+
+// ═══════════════════════════════════════════════════════
+//  WORLD 3 — BST
+// ═══════════════════════════════════════════════════════
+class BSTNode{ constructor(v){this.v=v;this.l=null;this.r=null;} }
+class BST_Class{
+  constructor(){this.root=null;}
+  insert(v){this.root=this._ins(this.root,v);}
+  _ins(n,v){ if(!n)return new BSTNode(v); if(v<n.v)n.l=this._ins(n.l,v); else n.r=this._ins(n.r,v); return n; }
+  search(v){ let n=this.root; while(n){if(n.v===v)return true;n=v<n.v?n.l:n.r;} return false; }
+  inorder(){ const r=[],f=n=>{if(!n)return;f(n.l);r.push(n.v);f(n.r);}; f(this.root); return r; }
+  levelOrder(){ if(!this.root)return[]; const r=[],q=[this.root]; while(q.length){const n=q.shift();r.push(n.v);if(n.l)q.push(n.l);if(n.r)q.push(n.r);} return r; }
+  height(n=this.root){ if(!n)return 0; return 1+Math.max(this.height(n.l),this.height(n.r)); }
+}
+let bst=new BST_Class();
+function drawTree(svgId, root, highlight=new Set(), colorFn=null){
+  const svg=document.getElementById(svgId);
+  svg.innerHTML='';
+  if(!root)return;
+  const pos={};
+  const W=svg.parentElement.clientWidth||500;
+  function calc(n,d,lo,hi){ if(!n)return; const x=(lo+hi)/2,y=32+d*60; pos[n.v]={x,y,n}; calc(n.l,d+1,lo,(lo+hi)/2); calc(n.r,d+1,(lo+hi)/2,hi); }
+  calc(root,0,20,W-20);
+  // edges
+  for(const [v,{x,y,n}] of Object.entries(pos)){
+    [[n.l,'#c84b11'],[n.r,'#c84b11']].forEach(([child])=>{
+      if(child&&pos[child.v]){
+        const {x:cx,y:cy}=pos[child.v];
+        const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+        line.setAttribute('x1',x);line.setAttribute('y1',y);
+        line.setAttribute('x2',cx);line.setAttribute('y2',cy);
+        line.setAttribute('stroke','#5c4510');line.setAttribute('stroke-width','3');
+        svg.appendChild(line);
+      }
+    });
+  }
+  // nodes
+  for(const [v,{x,y,n}] of Object.entries(pos)){
+    const iv=parseInt(v);
+    let fill=colorFn?colorFn(iv,n):(highlight.has(iv)?'#e52521':'#e8a010');
+    const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+    const rect=document.createElementNS('http://www.w3.org/2000/svg','rect');
+    rect.setAttribute('x',x-18);rect.setAttribute('y',y-18);
+    rect.setAttribute('width',36);rect.setAttribute('height',36);
+    rect.setAttribute('fill',fill);rect.setAttribute('stroke','#000');rect.setAttribute('stroke-width','3');
+    const text=document.createElementNS('http://www.w3.org/2000/svg','text');
+    text.setAttribute('x',x);text.setAttribute('y',y+5);
+    text.setAttribute('text-anchor','middle');text.setAttribute('fill','#fff');
+    text.setAttribute('font-family','Press Start 2P,monospace');text.setAttribute('font-size','10');
+    text.textContent=v;
+    g.appendChild(rect);g.appendChild(text);svg.appendChild(g);
+  }
+  const maxY=Math.max(...Object.values(pos).map(p=>p.y));
+  svg.setAttribute('height',maxY+40);
+}
+function bstDraw(h=new Set()){drawTree('bst-svg',bst.root,h);}
+function bstInsert(){ const v=parseInt(document.getElementById('bst-val').value); if(isNaN(v))return; bst.insert(v); bstDraw(); log('bst-log',`insert(${v}) ✓ height=${bst.height()}`,'l-ok'); addScore(10); }
+function bstSearch(){ const v=parseInt(document.getElementById('bst-val').value); const f=bst.search(v); bstDraw(f?new Set([v]):new Set()); log('bst-log',`search(${v}) → ${f?'FOUND ✓':'NOT FOUND ✗'}`,f?'l-ok':'l-warn'); }
+function bstInorder(){ log('bst-log',`INORDER: [${bst.inorder().join(', ')}]`,'l-info'); }
+function bstLevel(){ log('bst-log',`LEVEL ORDER: [${bst.levelOrder().join(', ')}]`,'l-info'); }
+function bstReset(){ bst=new BST_Class(); [50,30,70,20,40,60,80].forEach(v=>bst.insert(v)); bstDraw(); logClear('bst-log','RESET WITH [50,30,70,20,40,60,80]'); }
+[50,30,70,20,40,60,80].forEach(v=>bst.insert(v));
+
+// ═══════════════════════════════════════════════════════
+//  WORLD 4 — AVL TREE (FROM SCRATCH)
+// ═══════════════════════════════════════════════════════
+class AVLNode{ constructor(v){this.v=v;this.l=null;this.r=null;this.h=1;} }
+class AVL_Class{
+  h(n){return n?n.h:0;}
+  bf(n){return n?this.h(n.l)-this.h(n.r):0;}
+  updH(n){if(n)n.h=1+Math.max(this.h(n.l),this.h(n.r));}
+  rotR(y){ const x=y.l,T2=x.r; x.r=y;y.l=T2; this.updH(y);this.updH(x); return x; }
+  rotL(x){ const y=x.r,T2=y.l; y.l=x;x.r=T2; this.updH(x);this.updH(y); return y; }
+  insert(n,v){
+    if(!n)return new AVLNode(v);
+    if(v<n.v)n.l=this.insert(n.l,v);
+    else if(v>n.v)n.r=this.insert(n.r,v);
+    else return n;
+    this.updH(n);
+    const b=this.bf(n);
+    if(b>1&&v<n.l.v){log('avl-log','LL ROTATION','l-step');return this.rotR(n);}
+    if(b<-1&&v>n.r.v){log('avl-log','RR ROTATION','l-step');return this.rotL(n);}
+    if(b>1&&v>n.l.v){log('avl-log','LR ROTATION','l-step');n.l=this.rotL(n.l);return this.rotR(n);}
+    if(b<-1&&v<n.r.v){log('avl-log','RL ROTATION','l-step');n.r=this.rotR(n.r);return this.rotL(n);}
+    return n;
+  }
+  search(n,v){if(!n)return false;if(n.v===v)return true;return v<n.v?this.search(n.l,v):this.search(n.r,v);}
+  inorder(n,r=[]){if(!n)return r;this.inorder(n.l,r);r.push(n.v);this.inorder(n.r,r);return r;}
+  height(n=this.root){if(!n)return 0;return 1+Math.max(this.height(n.l),this.height(n.r));}
+}
+let avl=new AVL_Class(); let avlRoot=null;
+function avlInsert(){ const v=parseInt(document.getElementById('avl-val').value); if(isNaN(v))return; avlRoot=avl.insert(avlRoot,v); avlDraw(); log('avl-log',`insert(${v}) ✓ bf=${avl.bf(avlRoot)} h=${avl.h(avlRoot)}`,'l-ok'); addScore(15); }
+function avlSearch(){ const v=parseInt(document.getElementById('avl-val').value); const f=avl.search(avlRoot,v); avlDraw(f?new Set([v]):new Set()); log('avl-log',`search(${v}) → ${f?'FOUND ✓':'NOT FOUND'}`,f?'l-ok':'l-warn'); }
+function avlInorder(){ log('avl-log',`INORDER: [${avl.inorder(avlRoot).join(', ')}]`,'l-info'); }
+function avlReset(){ avlRoot=null; [10,20,30,40,50,25].forEach(v=>{avlRoot=avl.insert(avlRoot,v);}); avlDraw(); logClear('avl-log','RESET — WATCH ROTATIONS!'); }
+function avlDraw(h=new Set()){ drawTree('avl-svg',avlRoot,h,(v,n)=>{ const b=avl.bf(n); if(h.has(v))return'#e52521'; if(b>1||b<-1)return'#9b59b6'; return'#27ae60'; }); }
+[10,20,30,40,50,25].forEach(v=>{avlRoot=avl.insert(avlRoot,v);});
+
+// ═══════════════════════════════════════════════════════
+//  WORLD 5 — GRAPH WITH DIJKSTRA
+// ═══════════════════════════════════════════════════════
+const gNodes=[
+  {id:0,x:290,y:30,label:'S'},{id:1,x:120,y:100},{id:2,x:460,y:100},
+  {id:3,x:60,y:200},{id:4,x:220,y:200},{id:5,x:360,y:200},{id:6,x:510,y:200}
+];
+const gEdges=[[0,1,4],[0,2,2],[1,3,5],[1,4,1],[2,5,3],[2,6,7],[4,5,2],[3,4,3]];
+const gNodeColors={};
+let gRunning=false;
+
+function gDraw(visitedSet=new Set(),distMap=null){
+  const svg=document.getElementById('graph-svg');
+  svg.innerHTML='';
+  gEdges.forEach(([u,v,w])=>{
+    const a=gNodes[u],b=gNodes[v];
+    const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1',a.x);line.setAttribute('y1',a.y);
+    line.setAttribute('x2',b.x);line.setAttribute('y2',b.y);
+    line.setAttribute('stroke','#5c4510');line.setAttribute('stroke-width','3');
+    svg.appendChild(line);
+    // weight label
+    const mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
+    const wbg=document.createElementNS('http://www.w3.org/2000/svg','rect');
+    wbg.setAttribute('x',mx-8);wbg.setAttribute('y',my-8);wbg.setAttribute('width',16);wbg.setAttribute('height',14);
+    wbg.setAttribute('fill','#fbd000');wbg.setAttribute('stroke','#000');wbg.setAttribute('stroke-width','1');
+    svg.appendChild(wbg);
+    const wt=document.createElementNS('http://www.w3.org/2000/svg','text');
+    wt.setAttribute('x',mx);wt.setAttribute('y',my+3);wt.setAttribute('text-anchor','middle');
+    wt.setAttribute('fill','#1a1a2e');wt.setAttribute('font-family','Press Start 2P,monospace');wt.setAttribute('font-size','8');
+    wt.textContent=w;svg.appendChild(wt);
+  });
+  gNodes.forEach(n=>{
+    const fill=gNodeColors[n.id]||'#e8a010';
+    const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+    const rect=document.createElementNS('http://www.w3.org/2000/svg','rect');
+    rect.setAttribute('x',n.x-20);rect.setAttribute('y',n.y-20);
+    rect.setAttribute('width',40);rect.setAttribute('height',40);
+    rect.setAttribute('fill',fill);rect.setAttribute('stroke','#000');rect.setAttribute('stroke-width','3');
+    svg.appendChild(rect);
+    const label=document.createElementNS('http://www.w3.org/2000/svg','text');
+    label.setAttribute('x',n.x);label.setAttribute('y',n.y+4);
+    label.setAttribute('text-anchor','middle');label.setAttribute('fill','#fff');
+    label.setAttribute('font-family','Press Start 2P,monospace');label.setAttribute('font-size','10');
+    label.textContent=n.id;svg.appendChild(label);
+    if(distMap&&distMap[n.id]!==undefined){
+      const dt=document.createElementNS('http://www.w3.org/2000/svg','text');
+      dt.setAttribute('x',n.x);dt.setAttribute('y',n.y+34);
+      dt.setAttribute('text-anchor','middle');dt.setAttribute('fill','#e52521');
+      dt.setAttribute('font-family','Press Start 2P,monospace');dt.setAttribute('font-size','8');
+      dt.textContent=distMap[n.id]===Infinity?'∞':distMap[n.id];svg.appendChild(dt);
+    }
+    g.appendChild(rect);g.appendChild(label);
+  });
+}
+
+async function gRunBFS(){
+  if(gRunning)return; gRunning=true; gReset();
+  document.getElementById('g-algo-name').textContent='BFS';
+  const adj={}; gNodes.forEach(n=>adj[n.id]=[]);
+  gEdges.forEach(([u,v])=>{adj[u].push(v);adj[v].push(u);});
+  const visited=[],seen=new Set([0]),q=[0];
+  logClear('graph-log','BFS FROM NODE 0...');
+  while(q.length){
+    const node=q.shift(); visited.push(node);
+    gNodeColors[node]='#e52521'; gDraw();
+    document.getElementById('g-visited').textContent=visited.length;
+    document.getElementById('g-order').textContent=visited.join('→');
+    log('graph-log',`VISIT: ${node}`,'l-step');
+    await delay(parseInt(document.getElementById('graph-speed').value));
+    for(const nb of adj[node]) if(!seen.has(nb)){seen.add(nb);q.push(nb);}
+  }
+  log('graph-log',`BFS DONE: [${visited.join(' → ')}]`,'l-ok'); gRunning=false; addScore(20);
+}
+
+async function gRunDFS(){
+  if(gRunning)return; gRunning=true; gReset();
+  document.getElementById('g-algo-name').textContent='DFS';
+  const adj={}; gNodes.forEach(n=>adj[n.id]=[]);
+  gEdges.forEach(([u,v])=>{adj[u].push(v);adj[v].push(u);});
+  const visited=[],seen=new Set();
+  logClear('graph-log','DFS FROM NODE 0...');
+  const spd=parseInt(document.getElementById('graph-speed').value);
+  async function dfs(node){
+    seen.add(node); visited.push(node);
+    gNodeColors[node]='#27ae60'; gDraw();
+    document.getElementById('g-visited').textContent=visited.length;
+    document.getElementById('g-order').textContent=visited.join('→');
+    log('graph-log',`VISIT: ${node}`,'l-step');
+    await delay(spd);
+    for(const nb of adj[node]) if(!seen.has(nb)) await dfs(nb);
+  }
+  await dfs(0);
+  log('graph-log',`DFS DONE: [${visited.join(' → ')}]`,'l-ok'); gRunning=false; addScore(20);
+}
+
+async function gRunDijkstra(){
+  if(gRunning)return; gRunning=true; gReset();
+  document.getElementById('g-algo-name').textContent='DIJKSTRA';
+  const adj={}; gNodes.forEach(n=>{adj[n.id]=[];});
+  gEdges.forEach(([u,v,w])=>{adj[u].push([v,w]);adj[v].push([u,w]);});
+  const dist={},visited=new Set();
+  gNodes.forEach(n=>dist[n.id]=Infinity); dist[0]=0;
+  logClear('graph-log','DIJKSTRA FROM NODE 0...');
+  const spd=parseInt(document.getElementById('graph-speed').value);
+  for(let i=0;i<gNodes.length;i++){
+    let u=-1;
+    gNodes.forEach(n=>{ if(!visited.has(n.id)&&(u===-1||dist[n.id]<dist[u])) u=n.id; });
+    if(dist[u]===Infinity) break;
+    visited.add(u);
+    gNodeColors[u]='#9b59b6'; gDraw(visited,dist);
+    document.getElementById('g-visited').textContent=visited.size;
+    document.getElementById('g-order').textContent=Object.entries(dist).map(([k,v])=>`${k}:${v===Infinity?'∞':v}`).join(' ');
+    log('graph-log',`NODE ${u} dist=${dist[u]}`,'l-step'); await delay(spd);
+    for(const [v,w] of adj[u]){
+      if(dist[u]+w<dist[v]){ dist[v]=dist[u]+w; log('graph-log',`  UPDATE ${v}→${dist[v]}`,'l-info'); }
+    }
+    gDraw(visited,dist);
+  }
+  log('graph-log',`DONE! DISTANCES: ${JSON.stringify(dist)}`,'l-ok'); gRunning=false; addScore(30);
+}
+
+function gReset(){ Object.keys(gNodeColors).forEach(k=>delete gNodeColors[k]); gDraw(); logClear('graph-log','CLICK BFS, DFS OR DIJKSTRA.'); document.getElementById('g-visited').textContent='0'; document.getElementById('g-order').textContent='—'; document.getElementById('g-algo-name').textContent='—'; }
+
+// ═══════════════════════════════════════════════════════
+//  WORLD 6 — HEAP (FROM SCRATCH)
+// ═══════════════════════════════════════════════════════
+let heapData=[], heapIsMin=true;
+
+function heapCmp(a,b){ return heapIsMin?a<b:a>b; }
+
+function heapInsertVal(val){
+  heapData.push(val);
+  let i=heapData.length-1;
+  while(i>0){
+    const p=Math.floor((i-1)/2);
+    addCmp(); addScore(2);
+    if(heapCmp(heapData[i],heapData[p])){ [heapData[i],heapData[p]]=[heapData[p],heapData[i]]; addSwp(); i=p; }
+    else break;
+  }
+}
+
+function heapify(i=0){
+  const n=heapData.length;
+  let ext=i;
+  const l=2*i+1,r=2*i+2;
+  addCmp(2);
+  if(l<n&&heapCmp(heapData[l],heapData[ext])) ext=l;
+  if(r<n&&heapCmp(heapData[r],heapData[ext])) ext=r;
+  if(ext!==i){ [heapData[i],heapData[ext]]=[heapData[ext],heapData[i]]; addSwp(); heapify(ext); }
+}
+
+function heapInsert(){ const v=parseInt(document.getElementById('heap-val').value); if(isNaN(v))return; heapInsertVal(v); heapDraw(); log('heap-log',`insert(${v}) ✓ root=${heapData[0]}`,'l-ok'); addScore(10); }
+function heapExtract(){
+  if(!heapData.length){log('heap-log','HEAP EMPTY!','l-warn');return;}
+  const root=heapData[0];
+  heapData[0]=heapData[heapData.length-1]; heapData.pop();
+  if(heapData.length) heapify(0);
+  heapDraw(); log('heap-log',`EXTRACTED ROOT: ${root} ✓ new root=${heapData[0]??'—'}`,'l-ok'); addScore(10);
+}
+function heapSort(){
+  const orig=[...heapData]; const sorted=[];
+  const tmp=[...heapData];
+  // build heap then extract all
+  while(heapData.length){ sorted.push(heapData[0]); heapData[0]=heapData[heapData.length-1]; heapData.pop(); if(heapData.length)heapify(0); }
+  log('heap-log',`HEAP SORT: [${sorted.join(', ')}]`,'l-ok');
+  heapData=[...orig]; heapDraw(); addScore(25);
+}
+function toggleHeapType(){
+  heapIsMin=!heapIsMin;
+  document.getElementById('heap-toggle').textContent=`MODE: ${heapIsMin?'MIN':'MAX'}`;
+  // rebuild
+  const vals=[...heapData]; heapData=[];
+  vals.forEach(v=>heapInsertVal(v));
+  heapDraw(); log('heap-log',`SWITCHED TO ${heapIsMin?'MIN':'MAX'}-HEAP ✓`,'l-info');
+}
+function heapClear(){ heapData=[]; heapDraw(); logClear('heap-log','CLEARED.'); }
+
+function heapDraw(){
+  const svg=document.getElementById('heap-svg');
+  const arr=document.getElementById('heap-arr');
+  svg.innerHTML=''; arr.innerHTML='';
+  if(!heapData.length){svg.innerHTML='<text x="20" y="40" font-family="VT323,monospace" font-size="18" fill="#8b6914">EMPTY HEAP</text>';return;}
+  const W=svg.parentElement.clientWidth||500;
+  const pos={};
+  function calcP(i,d,lo,hi){ const x=(lo+hi)/2,y=32+d*60; pos[i]={x,y}; if(2*i+1<heapData.length)calcP(2*i+1,d+1,lo,(lo+hi)/2); if(2*i+2<heapData.length)calcP(2*i+2,d+1,(lo+hi)/2,hi); }
+  calcP(0,0,20,W-20);
+  for(const [i,{x,y}] of Object.entries(pos)){
+    const p=Math.floor((i-1)/2);
+    if(i>0&&pos[p]){
+      const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+      line.setAttribute('x1',pos[p].x);line.setAttribute('y1',pos[p].y);
+      line.setAttribute('x2',x);line.setAttribute('y2',y);
+      line.setAttribute('stroke','#5c4510');line.setAttribute('stroke-width','3');
+      svg.appendChild(line);
+    }
+  }
+  for(const [i,{x,y}] of Object.entries(pos)){
+    const fill=parseInt(i)===0?'#e52521':'#2ecc40';
+    const rect=document.createElementNS('http://www.w3.org/2000/svg','rect');
+    rect.setAttribute('x',x-18);rect.setAttribute('y',y-18);rect.setAttribute('width',36);rect.setAttribute('height',36);
+    rect.setAttribute('fill',fill);rect.setAttribute('stroke','#000');rect.setAttribute('stroke-width','3');
+    svg.appendChild(rect);
+    const text=document.createElementNS('http://www.w3.org/2000/svg','text');
+    text.setAttribute('x',x);text.setAttribute('y',y+5);text.setAttribute('text-anchor','middle');
+    text.setAttribute('fill','#fff');text.setAttribute('font-family','Press Start 2P,monospace');text.setAttribute('font-size','10');
+    text.textContent=heapData[i];svg.appendChild(text);
+  }
+  const maxY=Math.max(...Object.values(pos).map(p=>p.y));
+  svg.setAttribute('height',maxY+40);
+  // array view
+  heapData.forEach((v,i)=>{
+    const n=document.createElement('div');
+    n.className='px-node'+(i===0?' highlight':'');
+    n.style.cssText='width:40px;height:40px;font-size:.55rem;';
+    n.innerHTML=`<div style="font-size:.35rem;color:rgba(255,255,255,.6)">[${i}]</div>${v}`;
+    arr.appendChild(n);
+  });
+}
+[10,5,20,3,8,15].forEach(v=>heapInsertVal(v));
+
+// ═══════════════════════════════════════════════════════
+//  WORLD 7 — HASHMAP FROM SCRATCH
+// ═══════════════════════════════════════════════════════
+const BUCKET_COUNT=8;
+let hashTable=Array.from({length:BUCKET_COUNT},()=>[]);
+
+function hashFn(key){
+  let h=0; for(let i=0;i<key.length;i++) h=(h*31+key.charCodeAt(i))%BUCKET_COUNT;
+  return Math.abs(h);
+}
+function hashPut(){
+  const k=document.getElementById('hash-key').value.trim();
+  const v=document.getElementById('hash-val').value.trim();
+  if(!k)return;
+  const idx=hashFn(k);
+  const bucket=hashTable[idx];
+  const existing=bucket.findIndex(e=>e[0]===k);
+  if(existing>=0) bucket[existing][1]=v;
+  else bucket.push([k,v]);
+  hashRender(); log('hash-log',`PUT(${k},${v}) → bucket[${idx}]`,'l-ok'); addScore(5);
+}
+function hashGet(){
+  const k=document.getElementById('hash-key').value.trim();
+  const idx=hashFn(k);
+  const found=hashTable[idx].find(e=>e[0]===k);
+  log('hash-log',`GET(${k}) → ${found?`"${found[1]}" ✓`:'NOT FOUND ✗'}`,found?'l-ok':'l-warn');
+  addCmp();
+}
+function hashDelete(){
+  const k=document.getElementById('hash-key').value.trim();
+  const idx=hashFn(k);
+  const before=hashTable[idx].length;
+  hashTable[idx]=hashTable[idx].filter(e=>e[0]!==k);
+  hashRender();
+  log('hash-log',hashTable[idx].length<before?`DELETE(${k}) ✓`:`${k} NOT FOUND`,hashTable[idx].length<before?'l-ok':'l-warn');
+}
+function hashClear(){ hashTable=Array.from({length:BUCKET_COUNT},()=>[]); hashRender(); logClear('hash-log','CLEARED.'); }
+function hashRender(){
+  const viz=document.getElementById('hash-viz');
+  viz.innerHTML='';
+  let total=0;
+  hashTable.forEach((bucket,i)=>{
+    total+=bucket.length;
+    const row=document.createElement('div'); row.className='hash-bucket';
+    const idx=document.createElement('div'); idx.className='hash-idx'; idx.textContent=i;
+    row.appendChild(idx);
+    if(bucket.length===0){ const e=document.createElement('span'); e.className='hash-empty'; e.textContent='(empty)'; row.appendChild(e); }
+    else{ bucket.forEach(([k,v])=>{ const c=document.createElement('div'); c.className='hash-cell'; c.textContent=`${k}:${v}`; row.appendChild(c); const a=document.createElement('span'); a.className='px-arrow'; a.textContent='→'; row.appendChild(a); }); }
+    viz.appendChild(row);
+  });
+  document.getElementById('hash-count').textContent=total;
+  document.getElementById('hash-lf').textContent=(total/BUCKET_COUNT).toFixed(2);
+}
+hashRender();
+// preload some entries
+[['name','Mario'],['level','1-1'],['score','8000'],['lives','3']].forEach(([k,v])=>{
+  document.getElementById('hash-key').value=k; document.getElementById('hash-val').value=v; hashPut();
+});
+
+// ═══════════════════════════════════════════════════════
+//  WORLD 8 — TRIE (FROM SCRATCH)
+// ═══════════════════════════════════════════════════════
+class TrieNode{ constructor(){this.children={};this.isEnd=false;} }
+class Trie_Class{
+  constructor(){this.root=new TrieNode();}
+  insert(word){ let n=this.root; for(const c of word.toLowerCase()){if(!n.children[c])n.children[c]=new TrieNode();n=n.children[c];}n.isEnd=true; }
+  search(word){ let n=this.root; for(const c of word.toLowerCase()){if(!n.children[c])return false;n=n.children[c];}return n.isEnd; }
+  startsWith(prefix){ let n=this.root; for(const c of prefix.toLowerCase()){if(!n.children[c])return false;n=n.children[c];}return true; }
+  autocomplete(prefix){
+    let n=this.root; const results=[];
+    for(const c of prefix.toLowerCase()){if(!n.children[c])return[];n=n.children[c];}
+    const dfs=(node,path)=>{
+      if(node.isEnd)results.push(prefix.toLowerCase().slice(0,prefix.length-prefix.length)+path);
+      for(const[c,child]of Object.entries(node.children))dfs(child,path+c);
+    };
+    dfs(n,prefix.toLowerCase());
+    return results;
+  }
+  getWords(n=this.root,prefix='',words=[]){ if(n.isEnd)words.push(prefix); for(const[c,child]of Object.entries(n.children))this.getWords(child,prefix+c,words); return words; }
+}
+let trie=new Trie_Class();
+function trieInsert(){ const w=document.getElementById('trie-word').value.trim().toLowerCase(); if(!w)return; trie.insert(w); trieDraw(); log('trie-log',`insert("${w}") ✓`,'l-ok'); addScore(10); }
+function trieSearch(){ const w=document.getElementById('trie-word').value.trim().toLowerCase(); const f=trie.search(w); log('trie-log',`search("${w}") → ${f?'FOUND ✓':'NOT FOUND ✗'}`,f?'l-ok':'l-warn'); }
+function triePrefix(){ const w=document.getElementById('trie-word').value.trim().toLowerCase(); const f=trie.startsWith(w); log('trie-log',`startsWith("${w}") → ${f?'YES ✓':'NO ✗'}`,f?'l-ok':'l-warn'); }
+function trieAutoComplete(){ const w=document.getElementById('trie-word').value.trim().toLowerCase(); const r=trie.autocomplete(w); log('trie-log',`autocomplete("${w}") → [${r.join(', ')||'none'}]`,'l-info'); }
+function trieClear(){ trie=new Trie_Class(); trieDraw(); logClear('trie-log','TRIE CLEARED.'); }
+
+function trieDraw(){
+  const svg=document.getElementById('trie-svg');
+  svg.innerHTML='';
+  const pos={};
+  let xCounter=0;
+  const W=svg.parentElement.clientWidth||500;
+  function countLeaves(n){ const keys=Object.keys(n.children); if(!keys.length)return 1; return keys.reduce((s,c)=>s+countLeaves(n.children[c]),0); }
+  function draw(node,depth,xStart,xEnd,parentX,parentY,label){
+    const x=(xStart+xEnd)/2, y=30+depth*60;
+    if(parentX!==null){ const line=document.createElementNS('http://www.w3.org/2000/svg','line'); line.setAttribute('x1',parentX);line.setAttribute('y1',parentY);line.setAttribute('x2',x);line.setAttribute('y2',y);line.setAttribute('stroke','#5c4510');line.setAttribute('stroke-width','2');svg.appendChild(line); if(label){ const t=document.createElementNS('http://www.w3.org/2000/svg','text');t.setAttribute('x',(parentX+x)/2+4);t.setAttribute('y',(parentY+y)/2);t.setAttribute('text-anchor','middle');t.setAttribute('fill','#c84b11');t.setAttribute('font-family','Press Start 2P,monospace');t.setAttribute('font-size','9');t.textContent=label;svg.appendChild(t); } }
+    const fill=node.isEnd?'#e52521':'#9b59b6';
+    const rect=document.createElementNS('http://www.w3.org/2000/svg','rect');
+    rect.setAttribute('x',x-16);rect.setAttribute('y',y-16);rect.setAttribute('width',32);rect.setAttribute('height',32);
+    rect.setAttribute('fill',fill);rect.setAttribute('stroke','#000');rect.setAttribute('stroke-width','2');
+    svg.appendChild(rect);
+    const txt=document.createElementNS('http://www.w3.org/2000/svg','text');
+    txt.setAttribute('x',x);txt.setAttribute('y',y+4);txt.setAttribute('text-anchor','middle');
+    txt.setAttribute('fill','#fff');txt.setAttribute('font-family','Press Start 2P,monospace');txt.setAttribute('font-size','8');
+    txt.textContent=label||'*';svg.appendChild(txt);
+    const children=Object.entries(node.children);
+    const total=countLeaves(node);
+    let cx=xStart;
+    children.forEach(([c,child])=>{ const leaves=countLeaves(child); const cw=(xEnd-xStart)*(leaves/total); draw(child,depth+1,cx,cx+cw,x,y,c); cx+=cw; });
+  }
+  draw(trie.root,0,10,W-10,null,null,'');
+  const maxY=Math.max(30,...Object.keys(Object.fromEntries([[0,0]])).map(()=>30));
+  // rough height estimate
+  let depth=0; function getD(n,d){if(!Object.keys(n.children).length){depth=Math.max(depth,d);return;}Object.values(n.children).forEach(c=>getD(c,d+1));} getD(trie.root,0);
+  svg.setAttribute('height',Math.max(100,30+depth*60+40));
+}
+['cat','car','card','care','bat','ball','ban'].forEach(w=>trie.insert(w));
+
+// ═══════════════════════════════════════════════════════
+//  WORLD 9 — SORTING WITH STEP MODE
+// ═══════════════════════════════════════════════════════
+let sortData=[], sortSteps=[], sortCurStep=0, sortPlaying=false, sortPlayInterval=null;
+
+const sortInfo={
+  bubble:    {best:'O(n)',avg:'O(n²)',worst:'O(n²)',space:'O(1)'},
+  selection: {best:'O(n²)',avg:'O(n²)',worst:'O(n²)',space:'O(1)'},
+  insertion: {best:'O(n)',avg:'O(n²)',worst:'O(n²)',space:'O(1)'},
+  merge:     {best:'O(n log n)',avg:'O(n log n)',worst:'O(n log n)',space:'O(n)'},
+  quick:     {best:'O(n log n)',avg:'O(n log n)',worst:'O(n²)',space:'O(log n)'},
+  heap:      {best:'O(n log n)',avg:'O(n log n)',worst:'O(n log n)',space:'O(1)'},
+};
+
+function sortInit(){
+  const custom=document.getElementById('sort-custom').value.trim();
+  if(custom){ const parsed=custom.split(',').map(s=>parseInt(s.trim())).filter(n=>!isNaN(n)); if(parsed.length>1){sortData=parsed;sortGenSteps();sortRenderStep(0);return;} }
+  sortData=Array.from({length:18},()=>Math.floor(Math.random()*90)+10);
+  sortGenSteps(); sortRenderStep(0);
+}
+
+function sortGenSteps(){
+  const algo=document.getElementById('sort-algo').value;
+  const info=sortInfo[algo];
+  document.getElementById('sort-complexity').innerHTML=
+    `<span class="chip">${info.best}</span><span class="chip red">${info.avg}</span><span class="chip red">${info.worst}</span><span class="chip blue">SPACE ${info.space}</span>`;
+  sortSteps=[]; sortCurStep=0;
+  let totalCmp=0,totalSwp=0;
+  const arr=[...sortData];
+
+  function step(a,cmp=[],done=[]){ sortSteps.push({arr:[...a],cmp,done:new Set(done),cmpCount:++totalCmp,swpCount:totalSwp}); }
+
+  if(algo==='bubble'){
+    for(let i=0;i<arr.length-1;i++) for(let j=0;j<arr.length-1-i;j++){step(arr,[j,j+1]);if(arr[j]>arr[j+1]){[arr[j],arr[j+1]]=[arr[j+1],arr[j]];totalSwp++;}}
+  } else if(algo==='selection'){
+    for(let i=0;i<arr.length-1;i++){let m=i;for(let j=i+1;j<arr.length;j++){step(arr,[m,j]);if(arr[j]<arr[m])m=j;}[arr[i],arr[m]]=[arr[m],arr[i]];totalSwp++;}
+  } else if(algo==='insertion'){
+    for(let i=1;i<arr.length;i++){let j=i;while(j>0&&arr[j-1]>arr[j]){step(arr,[j-1,j]);[arr[j-1],arr[j]]=[arr[j],arr[j-1]];totalSwp++;j--;}}
+  } else if(algo==='merge'){
+    function ms(a,l,r){if(l>=r)return;const m=Math.floor((l+r)/2);ms(a,l,m);ms(a,m+1,r);const la=a.slice(l,m+1),ra=a.slice(m+1,r+1);let i=0,j=0,k=l;while(i<la.length&&j<ra.length){step(a,[k]);if(la[i]<=ra[j])a[k++]=la[i++];else{a[k++]=ra[j++];totalSwp++;}totalCmp++;}while(i<la.length)a[k++]=la[i++];while(j<ra.length)a[k++]=ra[j++];}
+    ms(arr,0,arr.length-1);
+  } else if(algo==='quick'){
+    function qs(a,lo,hi){if(lo>=hi)return;const pivot=a[hi];let i=lo-1;for(let j=lo;j<hi;j++){step(a,[j,hi]);totalCmp++;if(a[j]<=pivot){i++;[a[i],a[j]]=[a[j],a[i]];totalSwp++;}}[a[i+1],a[hi]]=[a[hi],a[i+1]];const p=i+1;qs(a,lo,p-1);qs(a,p+1,hi);}
+    qs(arr,0,arr.length-1);
+  } else if(algo==='heap'){
+    const n=arr.length;
+    function hfy(a,n,i){let lg=i,l=2*i+1,r=2*i+2;if(l<n&&a[l]>a[lg])lg=l;if(r<n&&a[r]>a[lg])lg=r;if(lg!==i){[a[i],a[lg]]=[a[lg],a[i]];totalSwp++;step(a,[i,lg]);hfy(a,n,lg);}}
+    for(let i=Math.floor(n/2)-1;i>=0;i--)hfy(arr,n,i);
+    for(let i=n-1;i>0;i--){[arr[0],arr[i]]=[arr[i],arr[0]];totalSwp++;step(arr,[0,i]);hfy(arr,i,0);}
+  }
+  sortSteps.push({arr:[...arr],cmp:[],done:new Set(arr.map((_,i)=>i)),cmpCount:totalCmp,swpCount:totalSwp});
+  document.getElementById('sort-step-info').textContent=`STEP: 0/${sortSteps.length}`;
+}
+
+function sortRenderStep(idx){
+  if(!sortSteps.length)return;
+  idx=Math.max(0,Math.min(idx,sortSteps.length-1));
+  sortCurStep=idx;
+  const step=sortSteps[idx];
+  const container=document.getElementById('sort-bars');
+  container.innerHTML='';
+  const maxVal=Math.max(...step.arr);
+  step.arr.forEach((v,i)=>{
+    const bar=document.createElement('div');
+    const isDone=idx===sortSteps.length-1||step.done.has(i);
+    bar.className='bar'+(step.cmp.includes(i)?' cmp':isDone?' done':'');
+    bar.style.height=`${(v/maxVal)*140}px`;
+    bar.textContent=v;
+    container.appendChild(bar);
+  });
+  document.getElementById('sort-cmp').textContent=step.cmpCount;
+  document.getElementById('sort-swp').textContent=step.swpCount;
+  document.getElementById('sort-step-info').textContent=`STEP: ${idx+1}/${sortSteps.length}`;
+  addCmp(0); // don't double count
+  if(idx===sortSteps.length-1){ document.getElementById('sort-status').textContent='SORTED!'; addScore(20); }
+  else document.getElementById('sort-status').textContent='SORTING';
+}
+
+function sortStepFwd(){ sortRenderStep(sortCurStep+1); }
+function sortStepBack(){ sortRenderStep(sortCurStep-1); }
+function sortShuffle(){ sortStopPlay(); document.getElementById('sort-custom').value=''; sortInit(); logClear('sort-log','SHUFFLED.'); }
+function sortRun(){ sortStopPlay(); sortGenSteps(); sortStartPlay(); }
+
+function sortTogglePlay(){
+  if(sortPlaying) sortStopPlay();
+  else sortStartPlay();
+}
+function sortStartPlay(){
+  sortPlaying=true;
+  document.getElementById('sort-play-btn').textContent='⏸ PAUSE';
+  const spd=()=>parseInt(document.getElementById('sort-speed').value);
+  function step(){ if(sortCurStep>=sortSteps.length-1){sortStopPlay();return;} sortRenderStep(sortCurStep+1); sortPlayInterval=setTimeout(step,spd()); }
+  sortPlayInterval=setTimeout(step,spd());
+}
+function sortStopPlay(){
+  sortPlaying=false;
+  document.getElementById('sort-play-btn').textContent='▶ PLAY';
+  clearTimeout(sortPlayInterval);
+}
+sortInit();
+
+// ═══════════════════════════════════════════════════════
+//  WORLD 10 — SEARCHING
+// ═══════════════════════════════════════════════════════
+const srchArr=[2,5,8,12,16,23,38,56,72,91];
+
+function resetSearch(){
+  const viz=document.getElementById('srch-viz');
+  viz.innerHTML='';
+  srchArr.forEach(v=>{ const n=document.createElement('div'); n.className='px-node'; n.textContent=v; viz.appendChild(n); });
+  document.getElementById('srch-cmp').textContent='0';
+  document.getElementById('srch-res').textContent='—';
+  logClear('srch-log',`ARRAY: [${srchArr.join(', ')}]`);
+}
+
+async function runLinear(){
+  resetSearch();
+  const target=parseInt(document.getElementById('srch-val').value);
+  const nodes=[...document.getElementById('srch-viz').children];
+  let cmp=0;
+  log('srch-log',`LINEAR SEARCH FOR ${target}...`,'l-info');
+  for(let i=0;i<srchArr.length;i++){
+    nodes[i].classList.add('highlight'); cmp++; addCmp();
+    document.getElementById('srch-cmp').textContent=cmp;
+    await delay(200);
+    if(srchArr[i]===target){ nodes[i].classList.remove('highlight'); nodes[i].classList.add('found'); document.getElementById('srch-res').textContent=`IDX ${i}`; log('srch-log',`FOUND ${target} AT INDEX ${i} — ${cmp} COMPARISONS ✓`,'l-ok'); return; }
+    nodes[i].classList.remove('highlight'); nodes[i].classList.add('dead');
+  }
+  log('srch-log',`${target} NOT FOUND — ALL ${cmp} CHECKED`,'l-warn');
+}
+
+async function runBinary(){
+  resetSearch();
+  const target=parseInt(document.getElementById('srch-val').value);
+  const nodes=[...document.getElementById('srch-viz').children];
+  let lo=0,hi=srchArr.length-1,cmp=0;
+  log('srch-log',`BINARY SEARCH FOR ${target}...`,'l-info');
+  while(lo<=hi){
+    const mid=Math.floor((lo+hi)/2); cmp++; addCmp();
+    nodes[mid].classList.add('highlight');
+    document.getElementById('srch-cmp').textContent=cmp;
+    log('srch-log',`CHECK [${lo}..${hi}] mid=${mid} val=${srchArr[mid]}`,'l-step');
+    await delay(400);
+    if(srchArr[mid]===target){ nodes[mid].classList.remove('highlight'); nodes[mid].classList.add('found'); document.getElementById('srch-res').textContent=`IDX ${mid}`; log('srch-log',`FOUND ${target} AT INDEX ${mid} — ${cmp} COMPARISONS ✓`,'l-ok'); return; }
+    nodes[mid].classList.remove('highlight'); nodes[mid].classList.add('dead');
+    if(srchArr[mid]<target) lo=mid+1; else hi=mid-1;
+  }
+  log('srch-log',`NOT FOUND IN ${cmp} COMPARISONS`,'l-warn');
+}
+resetSearch();
+
+// ═══════════════════════════════════════════════════════
+//  WORLD 11 — DYNAMIC PROGRAMMING
+// ═══════════════════════════════════════════════════════
+function runFib(){
+  const n=parseInt(document.getElementById('fib-n').value);
+  const memo={},calls={};
+  function fib(k){ if(k<=1)return k; if(memo[k]!==undefined)return memo[k]; return memo[k]=fib(k-1)+fib(k-2); }
+  const viz=document.getElementById('fib-viz'); viz.innerHTML='';
+  for(let i=0;i<=n;i++){
+    const nd=document.createElement('div'); nd.className='px-node coin-n';
+    nd.style.cssText='width:52px;height:52px;flex-direction:column;gap:2px;font-size:.5rem;';
+    nd.innerHTML=`<span style="font-size:.35rem;opacity:.7">f(${i})</span><span>${fib(i)}</span>`;
+    viz.appendChild(nd);
+  }
+  document.getElementById('fib-log').innerHTML=`&gt; fib(${n}) = <span class="l-ok">${fib(n)}</span> — MEMOIZED O(n) vs NAIVE O(2^n)`;
+  addScore(15);
+}
+
+function runKnapsack(){
+  const W=parseInt(document.getElementById('ks-cap').value);
+  const wt=[1,3,4,5],val=[1,4,5,7],n=4;
+  const dp=Array.from({length:n+1},()=>new Array(W+1).fill(0));
+  for(let i=1;i<=n;i++) for(let w=0;w<=W;w++){ dp[i][w]=dp[i-1][w]; if(wt[i-1]<=w)dp[i][w]=Math.max(dp[i][w],dp[i-1][w-wt[i-1]]+val[i-1]); }
+  let html=`<table class="dp-tbl"><tr><th>i\\w</th>`;
+  for(let w=0;w<=W;w++) html+=`<th>${w}</th>`;
+  html+='</tr>';
+  for(let i=0;i<=n;i++){
+    html+=`<tr><th>${i}</th>`;
+    for(let w=0;w<=W;w++){
+      const isRes=i===n&&w===W;
+      html+=`<td class="${dp[i][w]>0?isRes?'res':'fill':''}">${dp[i][w]}</td>`;
+    }
+    html+='</tr>';
+  }
+  html+='</table>';
+  document.getElementById('ks-table').innerHTML=html;
+  document.getElementById('ks-log').innerHTML=`&gt; MAX VALUE FOR W=${W} → <span class="l-ok">${dp[n][W]} ✓</span>`;
+  addScore(20);
+}
+
+function runCoinChange(){
+  const coins=[1,5,6,9],amount=11;
+  const dp=new Array(amount+1).fill(Infinity); dp[0]=0;
+  for(let i=1;i<=amount;i++) for(const c of coins) if(c<=i&&dp[i-c]!==Infinity) dp[i]=Math.min(dp[i],dp[i-c]+1);
+  document.getElementById('dp3-log').innerHTML=`&gt; COIN CHANGE: coins=[${coins}] amount=${amount} → <span class="l-ok">MIN COINS = ${dp[amount]} ✓</span> (6+5=11)`;
+  addScore(15);
+}
+function runLCS(){
+  const a='ABCBDAB',b='BDCAB';
+  const m=a.length,nlen=b.length;
+  const dp=Array.from({length:m+1},()=>new Array(nlen+1).fill(0));
+  for(let i=1;i<=m;i++) for(let j=1;j<=nlen;j++) dp[i][j]=a[i-1]===b[j-1]?dp[i-1][j-1]+1:Math.max(dp[i-1][j],dp[i][j-1]);
+  document.getElementById('dp3-log').innerHTML=`&gt; LCS("${a}","${b}") → <span class="l-ok">LENGTH = ${dp[m][nlen]} ✓</span> (BCAB or BDAB)`;
+  addScore(15);
+}
+
+
+
+// ═══════════════════════════════════════════════════════
+//  BONUS 1 — QUIZ MODE
+// ═══════════════════════════════════════════════════════
+const QUIZ_QUESTIONS = [
+  {q:"What is the time complexity of inserting at the front of a Singly Linked List?",opts:["O(n)","O(1)","O(log n)","O(n²)"],ans:1,exp:"Front insertion only updates the head pointer — O(1)"},
+  {q:"Which data structure uses LIFO (Last In First Out)?",opts:["Queue","Linked List","Stack","BST"],ans:2,exp:"Stack is LIFO. Last element pushed is first to be popped."},
+  {q:"What is the worst-case time complexity of BST search?",opts:["O(log n)","O(1)","O(n)","O(n log n)"],ans:2,exp:"A skewed BST degrades to O(n) — like a linked list."},
+  {q:"AVL tree maintains balance by keeping the balance factor within:",opts:["[-2, 2]","[-1, 1]","[0, 1]","[-3, 3]"],ans:1,exp:"AVL trees allow balance factor of -1, 0, or +1 only."},
+  {q:"Which algorithm finds the shortest path in a WEIGHTED graph?",opts:["BFS","DFS","Dijkstra","Bellman-Ford (unweighted)"],ans:2,exp:"Dijkstra uses a priority queue to find shortest weighted paths."},
+  {q:"What is the time complexity of Merge Sort?",opts:["O(n²)","O(n log n)","O(n)","O(log n)"],ans:1,exp:"Merge sort always runs in O(n log n) — divide and merge."},
+  {q:"In a Min-Heap, the root element is always:",opts:["The largest","The median","The smallest","Random"],ans:2,exp:"Min-Heap property: parent is always smaller than children."},
+  {q:"What hash collision resolution technique does chaining use?",opts:["Open addressing","Linked lists at each bucket","Double hashing","Linear probing"],ans:1,exp:"Chaining stores colliding elements in a linked list at each bucket."},
+  {q:"Which traversal of a BST gives sorted output?",opts:["Preorder","Postorder","Inorder","Level order"],ans:2,exp:"Inorder (Left-Root-Right) of a BST always gives sorted elements."},
+  {q:"What data structure is used internally in BFS?",opts:["Stack","Queue","Heap","Array"],ans:1,exp:"BFS uses a Queue (FIFO) to explore nodes level by level."},
+  {q:"What is the space complexity of DFS (recursive)?",opts:["O(1)","O(V)","O(E)","O(V+E)"],ans:1,exp:"DFS recursion uses call stack — O(V) in worst case for deep graphs."},
+  {q:"Trie is most efficient for:",opts:["Sorting numbers","Prefix-based string search","Graph traversal","Finding median"],ans:1,exp:"Trie stores strings character by character, ideal for prefix search and autocomplete."},
+  {q:"What is the time complexity of Bubble Sort in best case?",opts:["O(n²)","O(n log n)","O(n)","O(1)"],ans:2,exp:"With early exit on no swaps, best case (sorted array) is O(n)."},
+  {q:"In Dynamic Programming, memoization refers to:",opts:["Sorting results","Caching computed subproblem results","Deleting old data","Parallel computation"],ans:1,exp:"Memoization stores results of expensive function calls to avoid recomputation."},
+  {q:"0/1 Knapsack DP has time complexity of:",opts:["O(n)","O(n log n)","O(n × W)","O(2^n)"],ans:2,exp:"DP table of size (n+1) × (W+1) → O(n×W) time and space."},
+  {q:"Which rotation is performed when AVL balance factor is +2 and left child is +1?",opts:["Left Rotation","Right Rotation","Left-Right Rotation","Right-Left Rotation"],ans:1,exp:"Left-heavy (BF=+2) with left-heavy child (BF=+1) → Right Rotation."},
+  {q:"What is the height of a balanced AVL tree with n nodes?",opts:["O(n)","O(n²)","O(log n)","O(sqrt n)"],ans:2,exp:"AVL height is always O(log n) due to balance constraint."},
+  {q:"Binary Search requires the array to be:",opts:["Unsorted","Sorted","Partially sorted","Random"],ans:1,exp:"Binary search assumes sorted order to eliminate half the search space each step."},
+  {q:"Which sorting algorithm has O(1) extra space?",opts:["Merge Sort","Quick Sort","Heap Sort","All of these"],ans:2,exp:"Heap Sort sorts in-place using O(1) extra space (ignoring recursion stack)."},
+  {q:"Coin Change (min coins) is solved using:",opts:["Greedy only","Dynamic Programming","BFS","Divide and Conquer"],ans:1,exp:"Greedy fails for some coin sets. DP (bottom-up) gives optimal solution."}
+];
+
+let quizState = { idx:0, score:0, streak:0, answers:[], timer:null, timerVal:30 };
+
+function quizStart() {
+  quizState = { idx:0, score:0, streak:0, answers:[], timer:null, timerVal:30 };
+  document.getElementById('quiz-start-screen').style.display='none';
+  document.getElementById('quiz-end-screen').style.display='none';
+  document.getElementById('quiz-game-screen').style.display='block';
+  quizShowQ();
+}
+
+function quizShowQ() {
+  const q = QUIZ_QUESTIONS[quizState.idx];
+  document.getElementById('q-num').textContent = quizState.idx+1;
+  document.getElementById('q-score').textContent = quizState.score;
+  document.getElementById('q-streak').textContent = quizState.streak;
+  document.getElementById('q-text').textContent = (quizState.idx+1)+'. '+q.q;
+  const optsEl = document.getElementById('q-opts');
+  optsEl.innerHTML = '';
+  q.opts.forEach((opt,i)=>{
+    const btn = document.createElement('button');
+    btn.className='q-opt'; btn.textContent=String.fromCharCode(65+i)+') '+opt;
+    btn.onclick=()=>quizAnswer(i);
+    optsEl.appendChild(btn);
+  });
+  quizState.timerVal = 30;
+  document.getElementById('q-timer').textContent = 30;
+  document.getElementById('q-prog').style.width='100%';
+  clearInterval(quizState.timer);
+  quizState.timer = setInterval(()=>{
+    quizState.timerVal--;
+    document.getElementById('q-timer').textContent=quizState.timerVal;
+    document.getElementById('q-prog').style.width=(quizState.timerVal/30*100)+'%';
+    if(quizState.timerVal<=0){ clearInterval(quizState.timer); quizAnswer(-1); }
+  },1000);
+}
+
+function quizAnswer(chosen) {
+  clearInterval(quizState.timer);
+  const q = QUIZ_QUESTIONS[quizState.idx];
+  const opts = document.querySelectorAll('.q-opt');
+  opts.forEach(b=>b.disabled=true);
+  opts[q.ans].classList.add('correct');
+  const correct = chosen===q.ans;
+  if(chosen>=0 && !correct) opts[chosen].classList.add('wrong');
+  const pts = correct ? (10 + quizState.streak*2) : 0;
+  quizState.score += pts;
+  quizState.streak = correct ? quizState.streak+1 : 0;
+  quizState.answers.push({q:q.q, chosen, correct, ans:q.ans, exp:q.exp});
+  const msg = correct ? `CORRECT! +${pts} PTS${quizState.streak>1?' STREAK x'+quizState.streak:''}` : (chosen===-1?'TIME UP! '+q.exp:'WRONG! '+q.exp);
+  log('quiz-log', msg, correct?'l-ok':'l-warn');
+  setTimeout(()=>{
+    quizState.idx++;
+    if(quizState.idx>=QUIZ_QUESTIONS.length) quizEnd();
+    else quizShowQ();
+  },1800);
+}
+
+function quizEnd() {
+  document.getElementById('quiz-game-screen').style.display='none';
+  document.getElementById('quiz-end-screen').style.display='block';
+  document.getElementById('q-final').textContent=quizState.score;
+  const pct=quizState.score/200*100;
+  const grades=[{t:90,'g':'S RANK - DSA MASTER! ★★★★★'},{t:75,'g':'A RANK - EXCELLENT! ★★★★'},{t:60,'g':'B RANK - GOOD JOB! ★★★'},{t:40,'g':'C RANK - KEEP STUDYING! ★★'},{t:0,'g':'D RANK - PRACTICE MORE! ★'}];
+  const grade=grades.find(g=>pct>=g.t);
+  document.getElementById('q-grade-msg').textContent=grade.g;
+  const rev=document.getElementById('q-review');
+  rev.innerHTML='<div style="font-size:8px;color:var(--coin);margin-bottom:6px">REVIEW:</div>';
+  quizState.answers.forEach((a,i)=>{
+    const d=document.createElement('div');d.className='q-review-item '+(a.correct?'ok':'bad');
+    d.textContent=(a.correct?'✓ ':'✗ ')+QUIZ_QUESTIONS[i].q.substring(0,50)+'...';
+    rev.appendChild(d);
+  });
+  addScore(quizState.score);
+}
+
+function quizRestart(){
+  document.getElementById('quiz-end-screen').style.display='none';
+  document.getElementById('quiz-start-screen').style.display='block';
+  document.getElementById('quiz-log').innerHTML='&gt; CLICK START QUIZ TO TRY AGAIN!';
+}
+
+// ═══════════════════════════════════════════════════════
+//  BONUS 2 — CODE GENERATOR (Claude API)
+// ═══════════════════════════════════════════════════════
+async function generateCode() {
+  const ds = document.getElementById('cg-ds').value;
+  const op = document.getElementById('cg-op').value;
+  const lang = document.getElementById('cg-lang').value;
+  const dsNames = {linked_list:'Linked List',stack:'Stack',queue:'Queue',bst:'Binary Search Tree',avl:'AVL Tree',heap:'Min/Max Heap',hashmap:'Hash Map',trie:'Trie',graph:'Graph with BFS/DFS',dijkstra:"Dijkstra's Algorithm"};
+  const opNames = {full:'full implementation from scratch',insert:'insert operation',delete:'delete operation',search:'search operation',traverse:'traversal'};
+  const langNames = {cpp:'C++17',python:'Python 3',java:'Java'};
+  const prompt = `Write a clean, well-commented ${langNames[lang]} implementation of ${opNames[op]} for ${dsNames[ds]}.
+Requirements:
+- Complete working code with proper syntax
+- Add inline comments explaining each step
+- Include time and space complexity as comments at the top
+- Include a main() function with example usage
+- Keep it concise but complete
+- Use proper ${langNames[lang]} conventions and best practices
+Do NOT include any explanation outside the code. Just the code block.`;
+
+  document.getElementById('cg-btn').disabled = true;
+  document.getElementById('cg-loading').style.display = 'flex';
+  document.getElementById('cg-output').textContent = '// Generating...';
+  document.getElementById('cg-title').textContent = dsNames[ds].toUpperCase()+' - '+langNames[lang];
+  logClear('cg-log','GENERATING '+dsNames[ds].toUpperCase()+' CODE IN '+langNames[lang].toUpperCase()+'...');
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1500,
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+    const data = await response.json();
+    let code = data.content.map(b=>b.text||'').join('');
+    code = code.replace(/```[a-z]*/g,'').replace(/```/g,'').trim();
+    document.getElementById('cg-output').textContent = code;
+    logClear('cg-log','CODE GENERATED! CLICK COPY TO USE IT.');
+    addScore(10);
+  } catch(e) {
+    document.getElementById('cg-output').textContent = '// Error generating code. Please try again.\n// '+e.message;
+    logClear('cg-log','ERROR: '+e.message);
+  }
+  document.getElementById('cg-btn').disabled = false;
+  document.getElementById('cg-loading').style.display = 'none';
+}
+
+function copyCode() {
+  const code = document.getElementById('cg-output').textContent;
+  navigator.clipboard.writeText(code).then(()=>{
+    document.getElementById('cg-copy').textContent='COPIED!';
+    setTimeout(()=>document.getElementById('cg-copy').textContent='COPY',1500);
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+//  BONUS 3 — AI CHATBOT (Claude API)
+// ═══════════════════════════════════════════════════════
+let chatHistory = [];
+
+function sendQuick(el) {
+  document.getElementById('chat-inp').value = el.textContent;
+  sendChat();
+}
+
+async function sendChat() {
+  const inp = document.getElementById('chat-inp');
+  const msg = inp.value.trim();
+  if(!msg) return;
+  inp.value='';
+  document.getElementById('chat-btn').disabled=true;
+
+  // Add user message
+  appendChatMsg(msg, 'user');
+  chatHistory.push({role:'user',content:msg});
+
+  // Add thinking indicator
+  const thinkId='think-'+Date.now();
+  appendChatMsg('THINKING...', 'bot', thinkId, true);
+  logClear('ai-log','AI IS THINKING...');
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:800,
+        system:`You are a DSA (Data Structures and Algorithms) tutor built into a Mario-themed educational game called DSA World. 
+Answer questions about data structures, algorithms, C++ code, time/space complexity, and computer science concepts.
+Keep answers concise and clear. Use ALL CAPS for key terms. When showing code, keep it short. 
+Add pixel game flair occasionally (use ★ ■ ► occasionally). Max 200 words per response.`,
+        messages:chatHistory
+      })
+    });
+    const data = await response.json();
+    const reply = data.content.map(b=>b.text||'').join('');
+
+    // Remove thinking and add real reply
+    const thinkEl=document.getElementById(thinkId);
+    if(thinkEl) thinkEl.closest('.chat-msg').remove();
+    chatHistory.push({role:'assistant',content:reply});
+    appendChatMsg(reply,'bot');
+    logClear('ai-log','AI RESPONDED! ASK ANOTHER QUESTION.');
+    addScore(5);
+  } catch(e) {
+    const thinkEl=document.getElementById(thinkId);
+    if(thinkEl) thinkEl.closest('.chat-msg').remove();
+    appendChatMsg('ERROR: COULD NOT CONNECT TO AI. CHECK YOUR CONNECTION.','bot');
+    logClear('ai-log','CONNECTION ERROR.');
+  }
+  document.getElementById('chat-btn').disabled=false;
+}
+
+function appendChatMsg(text, who, id='', thinking=false) {
+  const container=document.getElementById('chat-messages');
+  const div=document.createElement('div');
+  div.className='chat-msg '+(who==='user'?'user-msg':'bot-msg')+(thinking?' bot-thinking':'');
+  const avatar=document.createElement('div');
+  avatar.className='chat-avatar '+(who==='user'?'user-avatar':'bot-avatar');
+  avatar.textContent=who==='user'?'👤':'🤖';
+  const bubble=document.createElement('div');
+  bubble.className='chat-bubble';
+  if(id) bubble.id=id;
+  // Format text — split on newlines
+  text.split('\n').forEach(line=>{
+    const p=document.createElement('p');
+    p.textContent=line; bubble.appendChild(p);
+  });
+  if(who==='user'){div.appendChild(bubble);div.appendChild(avatar);}
+  else{div.appendChild(avatar);div.appendChild(bubble);}
+  container.appendChild(div);
+  container.scrollTop=container.scrollHeight;
+}
+
+// ═══ INIT DRAWS ═══
+setTimeout(()=>{ bstDraw(); avlDraw(); gDraw(); heapDraw(); trieDraw(); },200);
+</script>
+</body>
+</html>

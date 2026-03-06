@@ -1,0 +1,24 @@
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Compiled output
+dsa
+dsa.exe
+*.o
+*.out
+
+# Node (if added later)
+node_modules/
+.env
+.env.local
+
+# Vercel
+.vercel/

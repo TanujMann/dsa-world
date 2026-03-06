@@ -1,0 +1,23 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "*.html", "use": "@vercel/static" },
+    { "src": "*.pdf", "use": "@vercel/static" },
+    { "src": "*.cpp", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "src": "/", "dest": "/index.html" },
+    { "src": "/game", "dest": "/DSA_World_Final.html" },
+    { "handle": "filesystem" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
+        { "key": "Cache-Control", "value": "public, max-age=3600" }
+      ]
+    }
+  ]
+}
